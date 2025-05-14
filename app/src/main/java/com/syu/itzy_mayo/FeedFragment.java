@@ -27,7 +27,7 @@ public class FeedFragment extends Fragment {
         // 🍎 Apple Game
         CardView cardAppleGame = rootView.findViewById(R.id.card_apple_game);
         cardAppleGame.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), AppleGameActivity.class);
+            Intent intent = new Intent(requireContext(), MathGameActivity.class);
             startActivity(intent);
         });
 

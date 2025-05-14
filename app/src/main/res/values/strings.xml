@@ -9,4 +9,8 @@
     <string name="goal_status_text">달성됨!</string>
     <string name="game_over">Game Over</string>
     <string name="back">Back</string>
+    <string name="timer_format">⏱ Time: %02d:%02d</string>
+    <string name="runtime_format">⏱ %d</string>
+    <string name="score_format">🎯 Score: %d</string>
+    <string name="wrong_text">❌</string>
 </resources>
