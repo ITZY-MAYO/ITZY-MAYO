@@ -13,4 +13,9 @@
     <string name="runtime_format">⏱ %d</string>
     <string name="score_format">🎯 Score: %d</string>
     <string name="wrong_text">❌</string>
+    <string name="minigame_title">🕹️미니게임🕹️</string>
+    <string name="memory_game">Memory Game</string>
+    <string name="math_game">Math Game</string>
+    <string name="coming_soon">Coming Soon</string>
+    <string name="game_2048">2048</string>
 </resources>
