@@ -11,7 +11,6 @@ constraintlayout = "2.2.1"
 navermapsdk = "3.21.0"
 playServicesLocation = "21.3.0"
 firebaseBom = "33.13.0"
-firbaseAuth = "23.2.0"
 navigationFragment = "2.9.0"
 navigationUI = "2.9.0"
 
@@ -26,7 +25,9 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 navermapsdk = { group = "com.naver.maps", name = "map-sdk", version.ref = "navermapsdk"}
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation"}
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom"}
-firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firbaseAuth"}
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth"}
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore"}
+
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment"}
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUI"}
 

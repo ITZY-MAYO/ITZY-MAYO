@@ -66,7 +66,8 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
-    
+    implementation(libs.firebase.firestore)
+
     // Navigation Component (추가)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
