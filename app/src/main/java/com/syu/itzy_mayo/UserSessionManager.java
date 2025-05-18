@@ -7,10 +7,10 @@ import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-/**
- * 사용자 로그인 상태를 관리하는 유틸리티 클래스
- * 로그인 상태를 저장하고 확인하는 기능 제공
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public class UserSessionManager {
     private static final String TAG = "UserSessionManager";
     private static final String PREF_NAME = "UserSession";
@@ -19,14 +19,13 @@ public class UserSessionManager {
     private static final String KEY_USER_EMAIL = "userEmail";
     
     private static UserSessionManager instance;
-    private final SharedPreferences pref;
     private final SharedPreferences.Editor editor;
-    private final FirebaseAuth mAuth;
-    
+    private FirebaseAuth firebaseAuth;
+    private final List<AuthStateObserver> observers = new ArrayList<>();
+
     private UserSessionManager(Context context) {
-        pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         editor = pref.edit();
-        mAuth = FirebaseAuth.getInstance();
     }
     
     public static synchronized UserSessionManager getInstance(Context context) {
@@ -36,81 +35,63 @@ public class UserSessionManager {
         return instance;
     }
     
-    /**
-     * 로그인 세션을 생성하고 사용자 정보를 저장
-     * @param user Firebase 사용자 객체
-     */
     public void createLoginSession(FirebaseUser user) {
         if (user != null) {
-            editor.putBoolean(KEY_IS_LOGGED_IN, true);
-            editor.putString(KEY_USER_ID, user.getUid());
-            editor.putString(KEY_USER_EMAIL, user.getEmail());
-            editor.apply();
+            editor.putBoolean(KEY_IS_LOGGED_IN, true)
+                    .putString(KEY_USER_ID, user.getUid())
+                    .putString(KEY_USER_EMAIL, user.getEmail())
+                    .apply();
+            notifyAuthStateChanged(user);
             Log.d(TAG, "로그인 세션 생성: " + user.getEmail());
         }
     }
     
-    /**
-     * 로그인 상태 체크
-     * @return 로그인 상태 (true: 로그인, false: 로그아웃)
-     */
     public boolean isLoggedIn() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        boolean isFirebaseLoggedIn = currentUser != null;
-        boolean isLocalLoggedIn = pref.getBoolean(KEY_IS_LOGGED_IN, false);
-        
-        // Firebase와 로컬 저장소의 로그인 상태가 일치하지 않는 경우 동기화
-        if (isFirebaseLoggedIn != isLocalLoggedIn) {
-            if (isFirebaseLoggedIn) {
-                createLoginSession(currentUser);
-            } else {
-                logoutUser();
-            }
-        }
-        
-        return isFirebaseLoggedIn;
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        return currentUser != null;
     }
     
-    /**
-     * 로그아웃 처리
-     */
-    public void logoutUser() {
-        mAuth.signOut();
-        
-        // 저장된 사용자 데이터 삭제
-        editor.clear();
-        editor.apply();
-        
-        Log.d(TAG, "사용자 로그아웃");
+public void logoutUser() {
+    if (isLoggedIn()) {
+        firebaseAuth.signOut();
     }
+    // 저장된 사용자 데이터 삭제
+    editor.clear();
+    editor.apply();
+    Log.d(TAG, "사용자 로그아웃");
+    notifyAuthStateChanged(null);
+}
     
-    /**
-     * 현재 사용자의 이메일 가져오기
-     * @return 로그인된 사용자 이메일, 로그인되지 않은 경우 null
-     */
     public String getUserEmail() {
         if (isLoggedIn()) {
-            return mAuth.getCurrentUser().getEmail();
+            return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getEmail();
         }
         return null;
     }
     
-    /**
-     * 현재 사용자의 ID 가져오기
-     * @return 로그인된 사용자 ID, 로그인되지 않은 경우 null
-     */
     public String getUserId() {
         if (isLoggedIn()) {
-            return mAuth.getCurrentUser().getUid();
+            return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
         }
         return null;
     }
-    
-    /**
-     * Firebase 인증 객체 가져오기
-     * @return Firebase 인증 객체
-     */
+    public void setFirebaseAuth(FirebaseAuth firebaseAuth) {
+        this.firebaseAuth = firebaseAuth;
+    }
     public FirebaseAuth getFirebaseAuth() {
-        return mAuth;
+        return firebaseAuth;
+    }
+    public void addObserver(AuthStateObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+    public void removeObserver(AuthStateObserver observer) {
+        observers.remove(observer);
+    }
+    private void notifyAuthStateChanged(FirebaseUser user) {
+        for (AuthStateObserver observer : observers) {
+            observer.onAuthStateChanged(user);
+        }
     }
 } 
