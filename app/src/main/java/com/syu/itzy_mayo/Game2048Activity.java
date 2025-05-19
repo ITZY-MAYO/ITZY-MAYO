@@ -33,7 +33,7 @@ public class Game2048Activity extends BaseGameActivity {
 
     @Override
     protected boolean useRuntimeTimer() {
-        return false; // 시간 타이머 사용하지 않음
+        return false; // 시간 타이머 기능 끄기.
     }
 
     @Override

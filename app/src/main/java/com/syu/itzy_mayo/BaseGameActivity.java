@@ -172,7 +172,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         startQuestionTimer();
     }
 
-    private void startQuestionTimer() {
+    protected void startQuestionTimer() {
         if (questionTimer != null) questionTimer.cancel();
         questionTimer = new CountDownTimer(5000, 1000) {
             public void onTick(long millisUntilFinished) {
