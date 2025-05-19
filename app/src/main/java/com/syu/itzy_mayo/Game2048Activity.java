@@ -1,7 +1,6 @@
 package com.syu.itzy_mayo;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.GridLayout;
@@ -14,7 +13,7 @@ import android.view.Gravity;
 import java.util.Random;
 import android.view.View;
 
-public class Game2048Activity extends AppCompatActivity {
+public class Game2048Activity extends BaseGameActivity {
 
     private GridLayout gridLayout;
     private TextView gameOverText;
@@ -23,11 +22,23 @@ public class Game2048Activity extends AppCompatActivity {
     private final Random random = new Random();
 
     @Override
+    protected int getLayoutResId() {
+        return R.layout.activity_game_2048;
+    }
+
+    @Override
+    protected int getGameContentLayoutRes() {
+        return 0; // View를 직접 구성하므로 필요 없음
+    }
+
+    @Override
+    protected boolean useRuntimeTimer() {
+        return false; // 시간 타이머 사용하지 않음
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game_2048);
-
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());// 🔙 뒤로가기 버튼 이벤트 연결
 
         gameOverText = findViewById(R.id.game_over_text);
         FrameLayout innerContainer = findViewById(R.id.game_inner_container);
@@ -63,7 +74,6 @@ public class Game2048Activity extends AppCompatActivity {
     private void showGameOver() {
         gameOverText.setVisibility(View.VISIBLE);
         gameOverText.bringToFront();
-        // Force redraw
         gameOverText.invalidate();
     }
 
@@ -95,6 +105,7 @@ public class Game2048Activity extends AppCompatActivity {
         }
         return false;
     }
+
     private boolean cannotMove() {
         return !canMove();
     }
@@ -103,32 +114,19 @@ public class Game2048Activity extends AppCompatActivity {
         String text = cells[x][y].getText().toString();
         return text.isEmpty() ? 0 : Integer.parseInt(text);
     }
+
     private boolean isBoardFull() {
         for (int x = 0; x < GRID_SIZE; x++) {
             for (int y = 0; y < GRID_SIZE; y++) {
-                if (cells[x][y].getText().toString().isEmpty()) {
-                    return false;
-                }
+                if (cells[x][y].getText().toString().isEmpty()) return false;
             }
         }
         return true;
     }
 
     private void addRandomTile() {
-        boolean isFull = true;
-        for (int x = 0; x < GRID_SIZE; x++) {
-            for (int y = 0; y < GRID_SIZE; y++) {
-                if (cells[x][y].getText().toString().isEmpty()) {
-                    isFull = false;
-                }
-            }
-        }
-
-        if (isFull) {
-            if (cannotMove()) {
-                showGameOver();
-                return;
-            }
+        if (isBoardFull() && cannotMove()) {
+            showGameOver();
             return;
         }
 
@@ -166,37 +164,26 @@ public class Game2048Activity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (isGamePaused()) return true;
+
         boolean moved;
 
         switch (keyCode) {
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-                moved = swipeLeft();
-                break;
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                moved = swipeRight();
-                break;
-            case KeyEvent.KEYCODE_DPAD_UP:
-                moved = swipeUp();
-                break;
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-                moved = swipeDown();
-                break;
-            default:
-                return super.onKeyDown(keyCode, event);
+            case KeyEvent.KEYCODE_DPAD_LEFT: moved = swipeLeft(); break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT: moved = swipeRight(); break;
+            case KeyEvent.KEYCODE_DPAD_UP: moved = swipeUp(); break;
+            case KeyEvent.KEYCODE_DPAD_DOWN: moved = swipeDown(); break;
+            default: return super.onKeyDown(keyCode, event);
         }
 
-        if (moved) {
-            addRandomTile();
-        }
+        if (moved) addRandomTile();
 
-        // Always check game over regardless of move
         if (isBoardFull() && cannotMove()) {
             new android.os.Handler().postDelayed(this::showGameOver, 100);
         }
 
         return true;
     }
-
     private boolean swipeLeft() {
         boolean moved = false;
         for (int y = 0; y < GRID_SIZE; y++) {
