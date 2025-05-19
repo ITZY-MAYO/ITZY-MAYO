@@ -31,7 +31,7 @@ public class MathGameActivity extends BaseGameActivity {
         switch (operator) {
             case 0: op = "+"; correctAnswer = a + b; break;
             case 1: op = "-"; correctAnswer = a - b; break;
-            default: op = "\u00D7"; correctAnswer = a * b; break;
+            default: op = "x"; correctAnswer = a * b; break;
         }
 
         questionText.setText(String.format(Locale.getDefault(), "%d %s %d = ?", a, op, b));
