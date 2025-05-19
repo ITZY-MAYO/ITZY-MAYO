@@ -25,6 +25,17 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <!-- ⏸ 일시정지 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_pause"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/pause_fill"
+            android:contentDescription="@string/pause"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <!-- 🧩 게임 보드 영역 -->
         <FrameLayout
             android:id="@+id/game_inner_container"
