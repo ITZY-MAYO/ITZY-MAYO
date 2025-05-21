@@ -1,12 +1,125 @@
 package com.syu.itzy_mayo;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Handler;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.GridLayout;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
-public class MemoryGameActivity extends AppCompatActivity {
+import androidx.annotation.Nullable;
+
+import java.util.Collections;
+import java.util.ArrayList;
+
+public class MemoryGameActivity extends BaseGameActivity {
+
+    private GridLayout grid;
+    private final int[] icons = {
+            R.drawable.memory_bolt, R.drawable.memory_ladybug,
+            R.drawable.memory_leaf, R.drawable.memory_rainbow,
+            R.drawable.memory_sun, R.drawable.memory_heart
+    };
+    private ArrayList<Integer> cardImages;
+    private ImageButton firstCard, secondCard;
+    private boolean isFlipping = false;
+    private int matchCount = 0;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected int getLayoutResId() {
+        return R.layout.activity_memory_game;
+    }
+
+    @Override
+    protected int getGameContentLayoutRes() {
+        return R.layout.memory_game_content;
+    }
+
+    @Override
+    protected boolean useRuntimeTimer() {
+        return true;
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_memory_game); // layout은 나중에 만들어도 됨
+        grid = findViewById(R.id.memory_grid);
+        setupGame();
+    }
+    @Override
+    protected void generateNewQuestion() {
+        // 메모리 게임은 문제를 생성하지 않음
+    }
+
+    private void setupGame() {
+        cardImages = new ArrayList<>();
+        for (int icon : icons) {
+            cardImages.add(icon);
+            cardImages.add(icon);
+        }
+        Collections.shuffle(cardImages);
+
+        grid.removeAllViews();
+        firstCard = secondCard = null;
+        matchCount = 0;
+
+        for (int i = 0; i < cardImages.size(); i++) {
+            // ✅ 여기서부터 카드 하나 생성
+            ImageButton card = new ImageButton(this);
+
+            // 🔧 이미지 설정 및 크기 조절
+            card.setScaleType(ImageView.ScaleType.FIT_CENTER);  // 비율 유지
+            card.setAdjustViewBounds(true);                     // 크기 조정 허용
+            card.setPadding(12, 12, 12, 12);                     // 여백
+
+            // 카드 뒷면 이미지
+            card.setBackgroundResource(R.drawable.card_back);
+
+            // 레이아웃 비율 조정
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = 0;
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.setMargins(8, 8, 8, 8);
+            card.setLayoutParams(params);
+
+            // 카드 이미지 태그로 저장
+            int imageRes = cardImages.get(i);
+            card.setTag(imageRes);
+
+            // 클릭 리스너 연결
+            card.setOnClickListener(v -> handleCardFlip((ImageButton) v));
+
+            // 뷰 추가
+            grid.addView(card);
+        }
+    }
+
+    private void handleCardFlip(ImageButton card) {
+        if (isFlipping || card == firstCard || card.getDrawable() != null) return;
+
+        card.setImageResource((int) card.getTag());
+
+        if (firstCard == null) {
+            firstCard = card;
+        } else {
+            secondCard = card;
+            isFlipping = true;
+
+            new Handler().postDelayed(() -> {
+                if ((int) firstCard.getTag() == (int) secondCard.getTag()) {
+                    matchCount++;
+                    firstCard.setEnabled(false);
+                    secondCard.setEnabled(false);
+                } else {
+                    firstCard.setImageDrawable(null);
+                    secondCard.setImageDrawable(null);
+                }
+                firstCard = secondCard = null;
+                isFlipping = false;
+            }, 1000);
+        }
     }
 }
