@@ -21,7 +21,7 @@
 
         <activity android:name=".MemoryGameActivity" android:exported="true" />
         <activity android:name=".MathGameActivity" android:exported="true" />
-        <activity android:name=".ComingSoonActivity" android:exported="true" />
+        <activity android:name=".GuessNumberActivity" android:exported="true" />
         <activity android:name=".Game2048Activity" android:exported="true" /> <!-- 여기 추가됨 -->
 
         <activity

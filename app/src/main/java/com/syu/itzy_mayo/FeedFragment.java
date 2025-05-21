@@ -34,7 +34,7 @@ public class FeedFragment extends Fragment {
         // ⏳ Coming Soon
         CardView cardEtcGame = rootView.findViewById(R.id.card_etc_game);
         cardEtcGame.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), ComingSoonActivity.class);
+            Intent intent = new Intent(requireContext(), GuessNumberActivity.class);
             startActivity(intent);
         });
 

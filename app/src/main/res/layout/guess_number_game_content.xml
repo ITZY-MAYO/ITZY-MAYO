@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <Spinner
+        android:id="@+id/difficultySpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/attemptsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="남은 기회: "
+        android:layout_marginTop="12dp"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/inputNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="숫자를 입력하세요"
+        android:layout_marginTop="12dp" />
+
+    <Button
+        android:id="@+id/guessButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="추측하기"
+        android:layout_marginTop="12dp" />
+
+    <TextView
+        android:id="@+id/resultText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="결과가 여기에 표시됩니다"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        android:id="@+id/restartButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="다시 시작"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
