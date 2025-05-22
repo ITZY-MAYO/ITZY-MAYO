@@ -9,4 +9,9 @@
     <string name="goal_status_text">달성됨!</string>
     <string name="game_over">Game Over</string>
     <string name="back">Back</string>
+    <string name="nav_home">홈</string>
+    <string name="nav_feed">피드</string>
+    <string name="nav_schedule">일정 추가</string>
+    <string name="nav_goal">목표</string>
+    <string name="nav_settings">설정</string>
 </resources>

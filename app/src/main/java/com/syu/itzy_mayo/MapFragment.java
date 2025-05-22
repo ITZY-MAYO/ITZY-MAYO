@@ -24,8 +24,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.map.CameraAnimation;
-import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
@@ -154,7 +152,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
         if (ContextCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             naverMap.setLocationTrackingMode(LocationTrackingMode.Follow);
-            showSYULocation();
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
@@ -181,23 +178,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
         marker.setCaptionTextSize(16);
         marker.setMap(naverMap);
         this.mapMarkers.put(key, marker);
-    }
-
-    private void showSYULocation() {
-        LatLng syu = new LatLng(37.6436, 127.1063);
-        Marker marker = new Marker();
-        marker.setPosition(syu);
-        marker.setIcon(OverlayImage.fromResource(R.drawable.ic_marker));
-        marker.setWidth(80);
-        marker.setHeight(80);
-        marker.setCaptionText("삼육대학교");
-        marker.setCaptionColor(Color.BLACK);
-        marker.setCaptionHaloColor(Color.WHITE);
-        marker.setCaptionTextSize(16);
-        marker.setMap(naverMap);
-        this.mapMarkers.put("SYU", marker);
-        naverMap.addOnLoadListener(
-                () -> this.naverMap.moveCamera(CameraUpdate.scrollTo(syu).animate(CameraAnimation.Easing)));
     }
 
     private void showCurrentLocation() {
