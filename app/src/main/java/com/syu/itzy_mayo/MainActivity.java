@@ -9,14 +9,11 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.naver.maps.map.NaverMapSdk;
-
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private final FragmentManager fragmentManager = getSupportFragmentManager();
@@ -29,14 +26,13 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.menu_frame_layout, new MapFragment()).commit();
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new ItemSelectedListener());
+        bottomNavigationView.setOnItemSelectedListener(new ItemSelectedListener());
 
-        // 네이버 지도 SDK 초기화
         NaverMapSdk.getInstance(this).setClient(
                 new NaverMapSdk.NcpKeyClient(BuildConfig.NCP_CLIENT_ID));
     }
 
-    class ItemSelectedListener implements BottomNavigationView.OnNavigationItemSelectedListener {
+    class ItemSelectedListener implements BottomNavigationView.OnItemSelectedListener {
         @SuppressLint("NonConstantResourceId")
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -45,10 +41,10 @@ public class MainActivity extends AppCompatActivity {
 
             if (menuItem.getItemId() == R.id.nav_home) {
                 targetFragment = new MapFragment();
-            } else if (menuItem.getItemId() == R.id.nav_feed) {
-                targetFragment = new FeedFragment();
-            } else if (menuItem.getItemId() == R.id.nav_calander) {
-                targetFragment = new CalendarFragment();
+            } else if (menuItem.getItemId() == R.id.nav_games) {
+                targetFragment = new GamesFragment();
+            } else if (menuItem.getItemId() == R.id.nav_schedule) {
+                targetFragment = new ScheduleFragment();
             } else if (menuItem.getItemId() == R.id.nav_goal) {
                 targetFragment = new GoalPagerFragment();
             } else if (menuItem.getItemId() == R.id.nav_settings) {

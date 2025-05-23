@@ -11,11 +11,11 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
-public class FeedFragment extends Fragment {
+public class GamesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_feed, container, false);
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_games, container, false);
 
         // 🧠 Memory Game
         CardView cardMemoryGame = rootView.findViewById(R.id.card_memory_game);

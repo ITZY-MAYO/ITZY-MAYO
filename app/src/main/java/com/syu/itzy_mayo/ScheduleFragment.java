@@ -21,7 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class CalendarFragment extends Fragment {
+public class ScheduleFragment extends Fragment {
 
     private EditText inputTodo;
     private Button addButton;
@@ -41,6 +41,7 @@ public class CalendarFragment extends Fragment {
     private static final String KEY_LAST_SCHEDULE_DESC = "lastDesc";
 
     private Context context;
+
 
     @Nullable
     @Override

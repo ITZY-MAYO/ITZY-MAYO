@@ -24,4 +24,9 @@
         <item>보통 (15회)</item>
         <item>어려움 (10회)</item>
     </string-array>
+    <string name="nav_home">홈</string>
+    <string name="nav_games">게임</string>
+    <string name="nav_schedule">일정 추가</string>
+    <string name="nav_goal">목표</string>
+    <string name="nav_settings">설정</string>
 </resources>
