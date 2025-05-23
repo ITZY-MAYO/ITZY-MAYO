@@ -49,10 +49,6 @@ public class ScheduleFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_calendar, container, false);
         context = view.getContext();
 
-        inputTodo = view.findViewById(R.id.inputTodo);
-        addButton = view.findViewById(R.id.addButton);
-        todoListLayout = view.findViewById(R.id.todoListLayout);
-        saveButton = view.findViewById(R.id.saveButton);
         addressWebView = view.findViewById(R.id.addressWebView);
         searchEditText = view.findViewById(R.id.searchEditText);
 
@@ -67,12 +63,14 @@ public class ScheduleFragment extends Fragment {
         scheduleTitleEditText.setText(prefs.getString(KEY_LAST_SCHEDULE_TITLE, ""));
         scheduleDescriptionEditText.setText(prefs.getString(KEY_LAST_SCHEDULE_DESC, ""));
 
+
         WebSettings webSettings = addressWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setAllowContentAccess(true);
         webSettings.setAllowFileAccess(true);
+        webSettings.setAllowFileAccessFromFileURLs(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
@@ -84,16 +82,6 @@ public class ScheduleFragment extends Fragment {
             addressWebView.setVisibility(View.VISIBLE);
             addressWebView.loadUrl("file:///android_asset/kakao_address.html");
         });
-
-        addButton.setOnClickListener(view1 -> {
-            String taskText = inputTodo.getText().toString().trim();
-            if (!taskText.isEmpty()) {
-                addNewTask(taskText);
-                inputTodo.setText("");
-            }
-        });
-
-        saveButton.setOnClickListener(view1 -> saveCheckedTasks());
 
         scheduleSaveButton.setOnClickListener(view1 -> {
             SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
