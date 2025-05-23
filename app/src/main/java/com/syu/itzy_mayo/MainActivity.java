@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (menuItem.getItemId() == R.id.nav_home) {
                 targetFragment = new MapFragment();
-            } else if (menuItem.getItemId() == R.id.nav_feed) {
-                targetFragment = new FeedFragment();
+            } else if (menuItem.getItemId() == R.id.nav_games) {
+                targetFragment = new GamesFragment();
             } else if (menuItem.getItemId() == R.id.nav_schedule) {
                 targetFragment = new ScheduleFragment();
             } else if (menuItem.getItemId() == R.id.nav_goal) {

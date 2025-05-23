@@ -1,8 +1,27 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ITZYMAYO" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/my_light_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary color -->
+        <item name="colorSecondary">@color/my_light_secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Backgrounds -->
+        <item name="colorSurface">@color/my_surface</item>
+        <item name="colorOnBackground">@color/my_on_background</item>
+
+        <!-- Error color -->
+        <item name="colorError">@color/my_error</item>
+        <item name="colorOnError">@color/white</item>
+
+        <!-- Outline (border lines) -->
+        <item name="colorOutline">@color/my_outline</item>
+
+        <!-- Navigation bar color (bottom) -->
+        <item name="colorAccent">@color/my_accent</item>
     </style>
 
     <style name="Theme.ITZYMAYO" parent="Base.Theme.ITZYMAYO" />

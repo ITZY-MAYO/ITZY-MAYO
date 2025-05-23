@@ -38,7 +38,7 @@ public class SettingsFragment extends Fragment implements AuthStateObserver{
     private Button githubLoginButton;
     private Button registerButton;
     private Button logoutButton;
-    private TextView userEmail;
+    private TextView displayName;
     private Toast toast;
     private boolean isLogoutHandled;
 
@@ -79,7 +79,7 @@ public class SettingsFragment extends Fragment implements AuthStateObserver{
         githubLoginButton = rootView.findViewById(R.id.github_login_button);
         registerButton = rootView.findViewById(R.id.register_button);
         logoutButton = rootView.findViewById(R.id.logout_button);
-        userEmail = rootView.findViewById(R.id.user_email);
+        displayName = rootView.findViewById(R.id.display_name);
         
         // 버튼 클릭 리스너 설정
         loginButton.setOnClickListener(v -> loginUser());
@@ -95,7 +95,7 @@ public class SettingsFragment extends Fragment implements AuthStateObserver{
             // 로그인 상태 UI
             notLoggedInView.setVisibility(View.GONE);
             loggedInView.setVisibility(View.VISIBLE);
-            userEmail.setText(sessionManager.getUserEmail());
+            displayName.setText(sessionManager.getDisplayName());
         } else {
             // 로그아웃 상태 UI
             notLoggedInView.setVisibility(View.VISIBLE);

@@ -4,4 +4,12 @@
     <color name="white">#FFFFFFFF</color>
     <color name="purple_200">#BB86FC</color>
     <color name="gray">#666666</color>
+    <color name="my_light_primary">#5F9EEB</color>
+    <color name="my_light_secondary">#FFD56B</color>
+    <color name="my_surface">#FFFFFF</color>
+    <color name="my_background">#F6FAFF</color>
+    <color name="my_on_background">#333D4F</color>
+    <color name="my_error">#FF8A65</color>
+    <color name="my_outline">#E2EAF4</color>
+    <color name="my_accent">#74D59B</color>
 </resources>

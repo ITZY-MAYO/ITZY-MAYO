@@ -65,24 +65,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
                         if (snapshots == null) {
                             return;
                         }
-                        // DB 값 변경 시 마커 동기화
-                        // 기존 마커 중 SYU를 제외하고 모두 삭제
                         Iterator<Map.Entry<String, Marker>> iterator = mapMarkers.entrySet().iterator();
                         while (iterator.hasNext()) {
                             Map.Entry<String, Marker> entry = iterator.next();
-                            String key = entry.getKey();
-                            if (key.equals("SYU"))
-                                continue;
                             Marker marker = entry.getValue();
                             if (marker != null) {
                                 marker.setMap(null);
                                 iterator.remove();
                             }
                         }
-                        // DB에서 받아온 schedule로 마커 다시 생성
                         for (DocumentSnapshot doc : snapshots) {
                             Schedule schedule = doc.toObject(Schedule.class);
                             if (schedule != null && schedule.getTitle() != null && schedule.getGeoPoint() != null) {
+                                // 이 코드가 실행되면 db에서 가져온 일정 데이터에 설정된 위치가 지도에 표사됨(DB변경 감지 시)
                                 addMarker(schedule.getTitle(), schedule.getGeoPoint());
                             }
                         }
@@ -137,13 +132,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
         this.naverMap = naverMap;
-
         // UI 설정
         UiSettings uiSettings = naverMap.getUiSettings();
         uiSettings.setCompassEnabled(true);
         uiSettings.setScaleBarEnabled(true);
-        uiSettings.setZoomControlEnabled(true);
+        uiSettings.setZoomControlEnabled(false);
         uiSettings.setLocationButtonEnabled(true);
+        uiSettings.setZoomGesturesEnabled(true);
+
 
         // 위치 추적 모드 및 소스 설정
         this.naverMap.setLocationSource(locationSource);
@@ -155,11 +151,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
+        showCurrentLocation();
 
         // naverMap이 준비된 후, 로그인 상태라면 마커를 추가
         if (sessionManager.isLoggedIn()) {
             String uid = sessionManager.getUserId();
             if (uid != null) {
+                // 이 코드가 실행되면 db에서 가져온 일정 데이터에 설정된 위치가 지도에 표사됨(지도 로딩 완료 후)
                 addScheduleMarkers(uid);
             }
         }
@@ -187,30 +185,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
             return;
         }
 
-        // FusedLocationProviderClient로 현재 위치 가져오기
         fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(),
                 location -> {
                     if (location != null && naverMap != null) {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
-
-                        // 현재 위치에 마커 추가
-                        addCurrentLocationMarker(latitude, longitude);
+                        Log.i("Location", "latitude: " + latitude + " longitude: " + longitude);
                     }
                 });
-    }
-
-    private void addCurrentLocationMarker(double latitude, double longitude) {
-        // 현재 위치 좌표
-        LatLng currentPosition = new LatLng(latitude, longitude);
-
-        // 마커 객체 생성
-        Marker marker = new Marker();
-        marker.setPosition(currentPosition);
-        marker.setIcon(OverlayImage.fromResource(R.drawable.ic_my_location));
-        marker.setWidth(80);
-        marker.setHeight(80);
-        marker.setMap(naverMap);
     }
 
     private void addScheduleMarkers(String uid) {
@@ -218,13 +200,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // 기존 마커 중 SYU를 제외하고 모두 삭제
                         Iterator<Map.Entry<String, Marker>> iterator = mapMarkers.entrySet().iterator();
                         while (iterator.hasNext()) {
                             Map.Entry<String, Marker> entry = iterator.next();
-                            String key = entry.getKey();
-                            if (key.equals("SYU"))
-                                continue;
                             Marker marker = entry.getValue();
                             if (marker != null) {
                                 marker.setMap(null);
@@ -235,6 +213,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
                         for (DocumentSnapshot doc : task.getResult()) {
                             Schedule schedule = doc.toObject(Schedule.class);
                             if (schedule != null && schedule.getTitle() != null && schedule.getGeoPoint() != null) {
+                                // 실제 db에서 가져온 일정 데이터에 설정된 위치가 지도에 표시하는 코드
                                 addMarker(schedule.getTitle(), schedule.getGeoPoint());
                             }
                         }
@@ -274,17 +253,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
                         iterator.remove();
                     }
                 }
-                // 로그인 시 DB에서 마커 생성
+                // 이 코드가 실행되면 db에서 가져온 일정 데이터에 설정된 위치가 지도에 표사됨(인증정보 변경 시)
                 addScheduleMarkers(uid);
             }
         } else {
-            // 로그아웃 시 SYU를 제외한 모든 마커 삭제
             Iterator<Map.Entry<String, Marker>> iterator = mapMarkers.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, Marker> entry = iterator.next();
-                String key = entry.getKey();
-                if (key.equals("SYU"))
-                    continue;
                 Marker marker = entry.getValue();
                 if (marker != null) {
                     marker.setMap(null);
