@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingBottom="16dp"
-            android:text="🕹️미니게임🕹️"
+            android:text="@string/minigame_title"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -33,7 +33,7 @@
             android:padding="8dp"
             android:layout_gravity="center">
 
-            <!-- 1. 메모리 게임 (왼쪽 위) -->
+            <!-- 1. 메모리 게임 -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_memory_game"
                 android:layout_width="0dp"
@@ -48,13 +48,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Memory Game"
+                    android:text="@string/memory_game"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:background="@android:color/white" />
             </androidx.cardview.widget.CardView>
 
-            <!-- 2. 사과 게임 (오른쪽 위) -->
+            <!-- 2. 사칙연산게임 -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_apple_game"
                 android:layout_width="0dp"
@@ -69,13 +69,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Apple Game"
+                    android:text="@string/math_game"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:background="@android:color/white" />
             </androidx.cardview.widget.CardView>
 
-            <!-- 3. 기타 등등 (왼쪽 아래) -->
+            <!-- 3. 기타 -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_etc_game"
                 android:layout_width="0dp"
@@ -90,13 +90,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Coming Soon"
+                    android:text="@string/coming_soon"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:background="@android:color/white" />
             </androidx.cardview.widget.CardView>
 
-            <!-- 4. 2048 (오른쪽 아래) -->
+            <!-- 4. 2048 -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_2048"
                 android:layout_width="0dp"
@@ -111,7 +111,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="2048"
+                    android:text="@string/game_2048"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:background="@android:color/white" />
