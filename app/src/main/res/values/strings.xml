@@ -16,7 +16,12 @@
     <string name="minigame_title">🕹️미니게임🕹️</string>
     <string name="memory_game">Memory Game</string>
     <string name="math_game">Math Game</string>
-    <string name="coming_soon">Coming Soon</string>
+    <string name="coming_soon">Guess Number</string>
     <string name="game_2048">2048</string>
     <string name="pause">Pause</string>
+    <string-array name="difficulty_levels">
+        <item>쉬움 (20회)</item>
+        <item>보통 (15회)</item>
+        <item>어려움 (10회)</item>
+    </string-array>
 </resources>
