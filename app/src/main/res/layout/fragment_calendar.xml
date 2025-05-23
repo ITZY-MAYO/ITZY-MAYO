@@ -72,55 +72,14 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="일정 저장"
-            android:backgroundTint="#FF9800"
+            android:backgroundTint="#179E8B"
             android:textColor="@android:color/white"
             android:layout_marginBottom="24dp" />
 
         <!-- ➕ 할 일 입력 + 버튼 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
 
-            <EditText
-                android:id="@+id/inputTodo"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:hint="할 일 추가하기"
-                android:background="@android:drawable/edit_text"
-                android:padding="12dp"
-                android:textSize="16sp" />
-
-            <Button
-                android:id="@+id/addButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:text="추가"
-                android:layout_marginStart="8dp"
-                android:backgroundTint="#179E8B"
-                android:textColor="@android:color/white" />
-        </LinearLayout>
 
         <!-- 📋 할 일 목록 -->
-        <LinearLayout
-            android:id="@+id/todoListLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="16dp"
-            android:layout_marginBottom="16dp" />
 
-        <!-- 저장 버튼 -->
-        <Button
-            android:id="@+id/saveButton"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="할 일 저장"
-            android:backgroundTint="#179E8B"
-            android:textColor="@android:color/white"
-            android:textSize="16sp" />
     </LinearLayout>
 </ScrollView>
