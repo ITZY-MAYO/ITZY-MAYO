@@ -62,9 +62,9 @@ public void logoutUser() {
     notifyAuthStateChanged(null);
 }
     
-    public String getUserEmail() {
+    public String getDisplayName() {
         if (isLoggedIn()) {
-            return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getEmail();
+            return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getDisplayName();
         }
         return null;
     }
