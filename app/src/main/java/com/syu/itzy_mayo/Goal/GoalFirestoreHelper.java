@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class GoalFirestoreHelper {
+
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public void addGoal(Goal goal, Runnable onSuccess, Runnable onFailure) {
@@ -34,13 +35,29 @@ public class GoalFirestoreHelper {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Goal> goalList = new ArrayList<>();
+                    int todayIndex = GoalTabFragment.getTodayIndices().get(0);
+
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Goal goal = doc.toObject(Goal.class);
                         if (goal == null) continue;
-                        if (!todayOnly || (goal.getDaysOfWeek() != null && goal.getDaysOfWeek().containsAll(GoalTabFragment.getTodayIndices()))) {
+
+                        // 🔥 daysOfWeek 타입 강제 변환
+                        Object rawList = doc.get("daysOfWeek");
+                        List<Integer> parsedDays = new ArrayList<>();
+                        if (rawList instanceof List<?>) {
+                            for (Object obj : (List<?>) rawList) {
+                                if (obj instanceof Number) {
+                                    parsedDays.add(((Number) obj).intValue());
+                                }
+                            }
+                            goal.setDaysOfWeek(parsedDays);
+                        }
+
+                        if (!todayOnly || (goal.getDaysOfWeek() != null && goal.getDaysOfWeek().contains(todayIndex))) {
                             goalList.add(goal);
                         }
                     }
+
                     callback.accept(goalList);
                 })
                 .addOnFailureListener(e -> {
@@ -75,5 +92,19 @@ public class GoalFirestoreHelper {
                     }
                 });
     }
-}
 
+    public void updateGoal(Goal goal, Runnable onSuccess, Runnable onFailure) {
+        db.collection("goals")
+                .whereEqualTo("userId", goal.getUserId())
+                .whereEqualTo("createdDate", goal.getCreatedDate())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        doc.getReference().set(goal)
+                                .addOnSuccessListener(v -> onSuccess.run())
+                                .addOnFailureListener(e -> onFailure.run());
+                    }
+                })
+                .addOnFailureListener(e -> onFailure.run());
+    }
+}

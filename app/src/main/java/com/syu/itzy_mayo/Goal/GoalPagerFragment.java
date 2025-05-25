@@ -20,8 +20,9 @@ public class GoalPagerFragment extends Fragment {
     private ViewPager2 viewPager;
     private GoalPagerAdapter pagerAdapter;
 
+
     public GoalPagerFragment() {
-        super(R.layout.goal_pager_fragment);
+        super(R.layout.goal_pager_fragment); // XML 레이아웃 필요
     }
 
     @Nullable
@@ -38,12 +39,10 @@ public class GoalPagerFragment extends Fragment {
         pagerAdapter = new GoalPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
-        // 탭 연결
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setText(position == 0 ? "오늘 목표" : "전체 목표");
         }).attach();
 
-        // 탭 변경 시 FAB 표시 여부 제어
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
@@ -51,7 +50,6 @@ public class GoalPagerFragment extends Fragment {
             }
         });
 
-        // FAB 눌렀을 때 현재 탭의 프래그먼트에서 goal 추가
         fab.setOnClickListener(v -> {
             int pos = viewPager.getCurrentItem();
             Fragment f = getChildFragmentManager().getFragments().get(pos);

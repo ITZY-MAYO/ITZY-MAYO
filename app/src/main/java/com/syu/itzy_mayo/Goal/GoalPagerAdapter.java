@@ -18,7 +18,7 @@ public class GoalPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // "오늘 목표", "전체 목표"
+        return 2; // 오늘, 전체 탭
     }
 
     @Override
