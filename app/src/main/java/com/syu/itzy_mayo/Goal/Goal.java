@@ -1,7 +1,7 @@
-// Goal.java
 package com.syu.itzy_mayo.Goal;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Goal {
     private String title;
@@ -12,7 +12,7 @@ public class Goal {
     private String createdDate;
     private String userId;
 
-    public Goal() {} // Firestore 용 기본 생성자
+    public Goal() {} // Firestore 기본 생성자
 
     public Goal(String title, String time, List<Integer> daysOfWeek) {
         this.title = title;
@@ -41,4 +41,25 @@ public class Goal {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Goal goal = (Goal) obj;
+
+        return isCompleted == goal.isCompleted &&
+                Objects.equals(title, goal.title) &&
+                Objects.equals(time, goal.time) &&
+                Objects.equals(daysOfWeek, goal.daysOfWeek) &&
+                Objects.equals(checkedDate, goal.checkedDate) &&
+                Objects.equals(createdDate, goal.createdDate) &&
+                Objects.equals(userId, goal.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, time, daysOfWeek, isCompleted, checkedDate, createdDate, userId);
+    }
+
 }

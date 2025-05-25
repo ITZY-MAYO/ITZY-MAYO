@@ -1,32 +1,18 @@
 package com.syu.itzy_mayo.Goal;
 
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.app.*;
+import android.content.*;
+import android.os.*;
+import android.view.*;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.*;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.*;
 
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
-import com.syu.itzy_mayo.R;
-import com.syu.itzy_mayo.ItzyMayoApplication;
-import com.syu.itzy_mayo.UserSessionManager;
+import com.google.android.material.chip.*;
+import com.syu.itzy_mayo.*;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -74,18 +60,16 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
         super.onResume();
         refresh();
     }
+
     public static List<Integer> getTodayIndices() {
         int today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
         return Collections.singletonList(today);
     }
 
-
     private void attachSwipeToDelete() {
         ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override public boolean onMove(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder a, @NonNull RecyclerView.ViewHolder b) { return false; }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            @Override public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int pos = viewHolder.getAdapterPosition();
                 Goal g = adapter.getGoal(pos);
                 firestoreHelper.deleteGoal(g);

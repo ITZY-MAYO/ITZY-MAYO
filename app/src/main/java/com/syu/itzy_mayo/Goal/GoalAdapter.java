@@ -17,12 +17,7 @@ import com.google.firebase.firestore.SetOptions;
 import com.syu.itzy_mayo.R;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class GoalAdapter extends ListAdapter<Goal, GoalAdapter.GoalViewHolder> {
 
@@ -94,8 +89,7 @@ public class GoalAdapter extends ListAdapter<Goal, GoalAdapter.GoalViewHolder> {
                     goal.setCompleted(isChecked);
                     goal.setCheckedDate(isChecked ? todayDate : null);
 
-                    // 🔥 Firestore 업데이트
-                    FirebaseFirestore.getInstance().collection("goal")
+                    FirebaseFirestore.getInstance().collection("goals")
                             .whereEqualTo("userId", goal.getUserId())
                             .whereEqualTo("title", goal.getTitle())
                             .whereEqualTo("time", goal.getTime())
@@ -159,7 +153,7 @@ public class GoalAdapter extends ListAdapter<Goal, GoalAdapter.GoalViewHolder> {
         if (days == null) return "";
         String[] dow = {"일", "월", "화", "수", "목", "금", "토"};
         List<Integer> sortedDays = new ArrayList<>(days);
-        java.util.Collections.sort(sortedDays);
+        Collections.sort(sortedDays);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < sortedDays.size(); i++) {
             sb.append(dow[sortedDays.get(i)]);
