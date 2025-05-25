@@ -15,16 +15,20 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.syu.itzy_mayo.R;
 
-import java.util.List;
-
 public class GoalPagerFragment extends Fragment {
+
     private ViewPager2 viewPager;
     private GoalPagerAdapter pagerAdapter;
-    private List<GoalTabFragment> tabFragments;
+
+    public GoalPagerFragment() {
+        super(R.layout.goal_pager_fragment);
+    }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.goal_pager_fragment, container, false);
 
         TabLayout tabLayout = view.findViewById(R.id.tabLayout);
@@ -34,16 +38,20 @@ public class GoalPagerFragment extends Fragment {
         pagerAdapter = new GoalPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
+        // 탭 연결
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setText(position == 0 ? "오늘 목표" : "전체 목표");
         }).attach();
 
+        // 탭 변경 시 FAB 표시 여부 제어
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override public void onPageSelected(int position) {
-                fab.setVisibility(position == 1 ? View.VISIBLE : View.GONE);
+            @Override
+            public void onPageSelected(int position) {
+                fab.setVisibility(position == 1 ? View.VISIBLE : View.GONE); // 전체탭에서만 FAB 표시
             }
         });
 
+        // FAB 눌렀을 때 현재 탭의 프래그먼트에서 goal 추가
         fab.setOnClickListener(v -> {
             int pos = viewPager.getCurrentItem();
             Fragment f = getChildFragmentManager().getFragments().get(pos);
@@ -57,7 +65,9 @@ public class GoalPagerFragment extends Fragment {
 
     public void refreshAllTabs() {
         for (Fragment f : getChildFragmentManager().getFragments()) {
-            if (f instanceof GoalTabFragment) ((GoalTabFragment) f).refresh();
+            if (f instanceof GoalTabFragment) {
+                ((GoalTabFragment) f).refresh();
+            }
         }
     }
 }
