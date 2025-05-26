@@ -7,11 +7,6 @@
     android:gravity="center"
     android:padding="16dp">
 
-    <Spinner
-        android:id="@+id/difficultySpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
     <TextView
         android:id="@+id/attemptsText"
         android:layout_width="wrap_content"
