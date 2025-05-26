@@ -20,9 +20,8 @@ public class GoalPagerFragment extends Fragment {
     private ViewPager2 viewPager;
     private GoalPagerAdapter pagerAdapter;
 
-
     public GoalPagerFragment() {
-        super(R.layout.goal_pager_fragment); // XML 레이아웃 필요
+        super(R.layout.goal_pager_fragment);
     }
 
     @Nullable
@@ -46,7 +45,7 @@ public class GoalPagerFragment extends Fragment {
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                fab.setVisibility(position == 1 ? View.VISIBLE : View.GONE); // 전체탭에서만 FAB 표시
+                fab.setVisibility(position == 1 ? View.VISIBLE : View.GONE);
             }
         });
 

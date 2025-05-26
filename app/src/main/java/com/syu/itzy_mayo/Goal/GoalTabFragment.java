@@ -74,14 +74,14 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
         EditText etTime = dialogView.findViewById(R.id.etGoalTime);
         ChipGroup chipGroup = dialogView.findViewById(R.id.chipGroupDays);
 
-        List<Integer> selectedDays = new ArrayList<>();
+        Set<Integer> selectedDays = new HashSet<>();
         int[] chipIds = {R.id.chipSun, R.id.chipMon, R.id.chipTue, R.id.chipWed, R.id.chipThu, R.id.chipFri, R.id.chipSat};
         for (int i = 0; i < chipIds.length; i++) {
             final int dayIdx = i;
             Chip chip = dialogView.findViewById(chipIds[i]);
             chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) selectedDays.add(dayIdx);
-                else selectedDays.remove((Integer) dayIdx);
+                else selectedDays.remove(dayIdx);
             });
         }
 
@@ -90,7 +90,7 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
             if (getActivity().getCurrentFocus() != null) {
                 imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
             }
-            TimePickerDialog dialog = new TimePickerDialog(getContext(), (view, hour, minute) -> {
+            TimePickerDialog dialog = new TimePickerDialog(getContext(), (view1, hour, minute) -> {
                 etTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
             }, 8, 0, true);
             dialog.show();
@@ -107,7 +107,7 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
                         newGoal.setCreatedDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime()));
                         newGoal.setUserId(sessionManager.getUserId());
 
-                        firestoreHelper.addGoal(newGoal, this::refresh, () ->
+                        firestoreHelper.addGoal(newGoal, this::refreshAll, () ->
                                 Toast.makeText(getContext(), "저장 실패", Toast.LENGTH_SHORT).show()
                         );
                     }
@@ -125,7 +125,7 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
         etTitle.setText(goal.getTitle());
         etTime.setText(goal.getTime());
 
-        List<Integer> selectedDays = new ArrayList<>(goal.getDaysOfWeek());
+        Set<Integer> selectedDays = new HashSet<>(goal.getDaysOfWeek());
         int[] chipIds = {R.id.chipSun, R.id.chipMon, R.id.chipTue, R.id.chipWed, R.id.chipThu, R.id.chipFri, R.id.chipSat};
         for (int i = 0; i < chipIds.length; i++) {
             final int dayIdx = i;
@@ -133,12 +133,12 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
             chip.setChecked(selectedDays.contains(dayIdx));
             chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) selectedDays.add(dayIdx);
-                else selectedDays.remove((Integer) dayIdx);
+                else selectedDays.remove(dayIdx);
             });
         }
 
         etTime.setOnClickListener(v -> {
-            TimePickerDialog dialog = new TimePickerDialog(getContext(), (view, hour, minute) -> {
+            TimePickerDialog dialog = new TimePickerDialog(getContext(), (view1, hour, minute) -> {
                 etTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
             }, 8, 0, true);
             dialog.show();
@@ -154,8 +154,7 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
                         goal.setTitle(newTitle);
                         goal.setTime(newTime);
                         goal.setDaysOfWeek(new ArrayList<>(selectedDays));
-
-                        firestoreHelper.updateGoal(goal, this::refresh, () ->
+                        firestoreHelper.updateGoal(goal, this::refreshAll, () ->
                                 Toast.makeText(getContext(), "수정 실패", Toast.LENGTH_SHORT).show());
                     }
                 })
@@ -177,21 +176,22 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
 
     public void refresh() {
         boolean today = "today".equals(tabType);
-
-        adapter = new GoalAdapter(this, today, goal -> showEditGoalDialog(goal));
+        adapter = new GoalAdapter(this, today, getNowTime(), goal -> showEditGoalDialog(goal));
         recyclerView.setAdapter(adapter);
+
+        if (!"today".equals(tabType) && tvReport != null) {
+            tvReport.setVisibility(View.GONE);
+        }
 
         firestoreHelper.loadGoals(sessionManager.getUserId(), today, goals -> {
             SharedGoalList.get().setAllGoals(goals);
             adapter.submitList(goals);
             updateReport(goals);
-
             if (tvEmpty != null) {
                 tvEmpty.setVisibility(goals.isEmpty() ? View.VISIBLE : View.GONE);
             }
         });
     }
-
 
     public void refreshAll() {
         refresh();
@@ -204,16 +204,26 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
     @Override
     public void onGoalCheckedChanged(Goal goal) {
         firestoreHelper.updateGoalStatus(goal, goal.isCompleted(), goal.getCheckedDate());
-        refresh();
+
+        for (Goal g : SharedGoalList.get().getAllGoals()) {
+            if (g.getGoalId().equals(goal.getGoalId())) {
+                g.setCompleted(goal.isCompleted());
+                g.setCheckedDate(goal.getCheckedDate());
+                break;
+            }
+        }
+
+        updateReport(SharedGoalList.get().getAllGoals());
     }
+
 
     private void updateReport(List<Goal> goals) {
         if (!"today".equals(tabType) || tvReport == null) return;
         int total = 0, done = 0;
         int todayIdx = getTodayIndices().get(0);
-        String now = getNowTime();
+
         for (Goal g : goals) {
-            if (g.getDaysOfWeek().contains(todayIdx) && now.compareTo(g.getTime()) >= 0) {
+            if (g.getDaysOfWeek().contains(todayIdx) && isWithin15Minutes(g.getTime())) {
                 total++;
                 if (g.isCompleted()) done++;
             }
@@ -222,17 +232,40 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
         tvReport.setText("오늘 목표 달성률: " + percent + "%");
     }
 
+    private boolean isWithin15Minutes(String goalTimeStr) {
+        try {
+            String[] parts = goalTimeStr.split(":");
+            int goalHour = Integer.parseInt(parts[0]);
+            int goalMinute = Integer.parseInt(parts[1]);
+
+            Calendar now = Calendar.getInstance();
+            Calendar goal = (Calendar) now.clone();
+            goal.set(Calendar.HOUR_OF_DAY, goalHour);
+            goal.set(Calendar.MINUTE, goalMinute);
+            goal.set(Calendar.SECOND, 0);
+
+            long diffMillis = Math.abs(now.getTimeInMillis() - goal.getTimeInMillis());
+            long diffMinutes = diffMillis / (60 * 1000);
+
+            return diffMinutes <= 15;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void attachSwipeToDelete() {
         ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
-            public boolean onMove(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder a, @NonNull RecyclerView.ViewHolder b) { return false; }
+            public boolean onMove(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder a, @NonNull RecyclerView.ViewHolder b) {
+                return false;
+            }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int pos = viewHolder.getAdapterPosition();
                 Goal g = adapter.getGoal(pos);
+                adapter.removeItem(pos);
                 firestoreHelper.deleteGoal(g);
-                refresh();
             }
         };
         new ItemTouchHelper(callback).attachToRecyclerView(recyclerView);

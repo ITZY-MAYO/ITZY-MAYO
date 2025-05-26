@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Goal {
+    private String goalId;
     private String title;
     private String time;
     private List<Integer> daysOfWeek = new ArrayList<>();
@@ -21,6 +22,9 @@ public class Goal {
     }
 
     // --- Getter & Setter ---
+
+    public String getGoalId() { return goalId; }
+    public void setGoalId(String goalId) { this.goalId = goalId; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

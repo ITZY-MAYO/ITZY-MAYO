@@ -24,14 +24,19 @@ public class MyAlarmReceiver extends BroadcastReceiver {
 
         if (msg != null && msg.contains("아직 목표를 완료하지 않았습니다")) {
             List<Goal> allGoals = SharedGoalList.get().getAllGoals();
-            boolean notChecked = false;
-            for (Goal g : allGoals) {
-                if (g.getTitle().equals(title) && g.getTime().equals(time) && !g.isCompleted()) {
-                    notChecked = true;
-                    break;
+            if (allGoals != null && !allGoals.isEmpty()) {
+                boolean notChecked = false;
+                for (Goal g : allGoals) {
+                    if (g.getTitle().equals(title) && g.getTime().equals(time) && !g.isCompleted()) {
+                        notChecked = true;
+                        break;
+                    }
                 }
+                if (!notChecked) return; // 이미 완료된 경우 알림 무시
+            } else {
+                // 앱 실행 없이 SharedGoalList 비어있을 가능성 있음
+                // 강제로 알림 울리게 허용 (추가 로직 필요 시 Firestore에서 직접 검사 권장)
             }
-            if (!notChecked) return;
         }
 
         // 알림 채널 생성 (Android 8 이상)
@@ -57,7 +62,7 @@ public class MyAlarmReceiver extends BroadcastReceiver {
                 .setContentText(msg)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent); // 클릭 시 실행
+                .setContentIntent(pendingIntent);
 
         // Android 13+ 권한 체크
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {

@@ -1,4 +1,3 @@
-
 package com.syu.itzy_mayo.Goal;
 
 import android.view.LayoutInflater;
@@ -19,8 +18,9 @@ import java.util.Locale;
 
 public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder> {
 
-    private final List<Goal> goalList = new ArrayList<>();
+    final List<Goal> goalList = new ArrayList<>();
     private final boolean todayOnly;
+    private final String nowTime;
     private final OnGoalCheckListener checkListener;
     private final GoalClickListener clickListener;
 
@@ -32,9 +32,10 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         void onGoalLongClick(Goal goal);
     }
 
-    public GoalAdapter(OnGoalCheckListener checkListener, boolean todayOnly, GoalClickListener clickListener) {
+    public GoalAdapter(OnGoalCheckListener checkListener, boolean todayOnly, String nowTime, GoalClickListener clickListener) {
         this.checkListener = checkListener;
         this.todayOnly = todayOnly;
+        this.nowTime = nowTime;
         this.clickListener = clickListener;
     }
 
@@ -46,6 +47,13 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
 
     public Goal getGoal(int position) {
         return goalList.get(position);
+    }
+
+    public void removeItem(int position) {
+        if (position >= 0 && position < goalList.size()) {
+            goalList.remove(position);
+            notifyItemRemoved(position);
+        }
     }
 
     @NonNull
@@ -62,26 +70,26 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         holder.time.setText(goal.getTime());
         holder.days.setText(formatDaysOfWeek(goal.getDaysOfWeek()));
 
+        holder.checkBox.setOnCheckedChangeListener(null);
+
         if (todayOnly) {
             boolean isToday = goal.getDaysOfWeek().contains(getTodayIndex());
-            boolean isTimePassed = getNowTime().compareTo(goal.getTime()) >= 0;
+            boolean isWithinRange = isWithin15Minutes(goal.getTime(), nowTime);
 
-            if (isToday && isTimePassed) {
+            if (isToday && isWithinRange) {
                 holder.checkBox.setVisibility(View.VISIBLE);
-                holder.checkBox.setOnCheckedChangeListener(null);
                 holder.checkBox.setChecked(goal.isCompleted());
                 holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     goal.setCompleted(isChecked);
-                    goal.setCheckedDate(getNowTime());
+                    goal.setCheckedDate(nowTime);
                     checkListener.onGoalCheckedChanged(goal);
+                    notifyItemChanged(holder.getAdapterPosition());
                 });
             } else {
                 holder.checkBox.setVisibility(View.GONE);
-                holder.checkBox.setOnCheckedChangeListener(null);
             }
         } else {
             holder.checkBox.setVisibility(View.GONE);
-            holder.checkBox.setOnCheckedChangeListener(null);
         }
 
         holder.itemView.setOnLongClickListener(v -> {
@@ -113,9 +121,33 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         return (javaDay - 1) % 7;
     }
 
-    private String getNowTime() {
-        Calendar cal = Calendar.getInstance();
-        return String.format(Locale.getDefault(), "%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+    private boolean isWithin15Minutes(String goalTimeStr, String nowTimeStr) {
+        try {
+            String[] goalParts = goalTimeStr.split(":");
+            int goalHour = Integer.parseInt(goalParts[0]);
+            int goalMinute = Integer.parseInt(goalParts[1]);
+
+            String[] nowParts = nowTimeStr.split(":");
+            int nowHour = Integer.parseInt(nowParts[0]);
+            int nowMinute = Integer.parseInt(nowParts[1]);
+
+            Calendar now = Calendar.getInstance();
+            now.set(Calendar.HOUR_OF_DAY, nowHour);
+            now.set(Calendar.MINUTE, nowMinute);
+            now.set(Calendar.SECOND, 0);
+
+            Calendar goal = Calendar.getInstance();
+            goal.set(Calendar.HOUR_OF_DAY, goalHour);
+            goal.set(Calendar.MINUTE, goalMinute);
+            goal.set(Calendar.SECOND, 0);
+
+            long diffMillis = Math.abs(now.getTimeInMillis() - goal.getTimeInMillis());
+            long diffMinutes = diffMillis / (60 * 1000);
+
+            return diffMinutes <= 15;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private String formatDaysOfWeek(List<Integer> days) {
