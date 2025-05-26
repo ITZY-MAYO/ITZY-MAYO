@@ -10,7 +10,7 @@ import java.util.Random;
 public class GuessNumberActivity extends BaseGameActivity {
 
     private EditText inputNumber;
-    private Button guessButton, restartButton;
+    private Button guessButton;
     private TextView resultText, attemptsText;
 
     private int targetNumber;
@@ -28,17 +28,12 @@ public class GuessNumberActivity extends BaseGameActivity {
     }
 
     @Override
-    protected boolean useRuntimeTimer() {
-        return true;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         inputNumber = findViewById(R.id.inputNumber);
         guessButton = findViewById(R.id.guessButton);
-        restartButton = findViewById(R.id.restartButton);
+        Button restartButton = findViewById(R.id.restartButton);
         resultText = findViewById(R.id.resultText);
         attemptsText = findViewById(R.id.attemptsText);
 
