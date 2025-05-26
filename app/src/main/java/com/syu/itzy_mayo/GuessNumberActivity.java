@@ -43,7 +43,8 @@ public class GuessNumberActivity extends BaseGameActivity {
         attemptsText = findViewById(R.id.attemptsText);
 
         String difficulty = getIntent().getStringExtra("difficulty");
-        if (difficulty == null) difficulty = "보통 (15회)";
+        if (difficulty == null) difficulty = getString(R.string.difficulty_normal); // 안전하게
+
         setAttemptsByDifficulty(difficulty);
 
         restartButton.setOnClickListener(v -> startGame());
@@ -53,11 +54,12 @@ public class GuessNumberActivity extends BaseGameActivity {
     }
 
     private void setAttemptsByDifficulty(String difficulty) {
-        switch (difficulty) {
-            case "쉬움 (20회)": maxAttempts = 20; break;
-            case "어려움 (10회)": maxAttempts = 10; break;
-            case "보통 (15회)":
-            default: maxAttempts = 15;
+        if (difficulty.equals(getString(R.string.difficulty_easy))) {
+            maxAttempts = 20;
+        } else if (difficulty.equals(getString(R.string.difficulty_hard))) {
+            maxAttempts = 10;
+        } else {
+            maxAttempts = 15;
         }
     }
 
@@ -66,7 +68,7 @@ public class GuessNumberActivity extends BaseGameActivity {
         remainingAttempts = maxAttempts;
 
         inputNumber.setText("");
-        resultText.setText("숫자를 입력하세요 (1~100)");
+        resultText.setText(getString(R.string.enter_number_hint));  // "숫자를 입력하세요 (1~100)"
         updateAttemptsText();
         guessButton.setEnabled(true);
     }
@@ -79,17 +81,17 @@ public class GuessNumberActivity extends BaseGameActivity {
         remainingAttempts--;
 
         if (guess < targetNumber) {
-            resultText.setText("UP!");
+            resultText.setText(getString(R.string.wrong_up));
         } else if (guess > targetNumber) {
-            resultText.setText("DOWN!");
+            resultText.setText(getString(R.string.wrong_down));
         } else {
-            resultText.setText("정답입니다! 🎉");
+            resultText.setText(getString(R.string.correct_answer));
             guessButton.setEnabled(false);
             return;
         }
 
         if (remainingAttempts == 0) {
-            resultText.setText("실패! 정답은 " + targetNumber);
+            resultText.setText(getString(R.string.game_failed, targetNumber)); // %1$d
             guessButton.setEnabled(false);
         }
 
@@ -98,6 +100,6 @@ public class GuessNumberActivity extends BaseGameActivity {
     }
 
     private void updateAttemptsText() {
-        attemptsText.setText("남은 기회: " + remainingAttempts + " / " + maxAttempts);
+        attemptsText.setText(getString(R.string.remaining_attempts_format, remainingAttempts, maxAttempts));
     }
 }

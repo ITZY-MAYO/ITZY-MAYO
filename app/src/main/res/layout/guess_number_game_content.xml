@@ -11,7 +11,7 @@
         android:id="@+id/attemptsText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="남은 기회: "
+        android:text="@string/remaining_attempts_label"
         android:layout_marginTop="12dp"
         android:textSize="18sp" />
 
@@ -20,21 +20,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:hint="숫자를 입력하세요"
+        android:hint="@string/enter_number_hint"
         android:layout_marginTop="12dp" />
 
     <Button
         android:id="@+id/guessButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="추측하기"
+        android:text="@string/guess_button_text"
         android:layout_marginTop="12dp" />
 
     <TextView
         android:id="@+id/resultText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="결과가 여기에 표시됩니다"
+        android:text="@string/result_placeholder"
         android:textSize="20sp"
         android:layout_marginTop="20dp" />
 
@@ -42,7 +42,7 @@
         android:id="@+id/restartButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="다시 시작"
+        android:text="@string/restart_button_text"
         android:layout_marginTop="16dp" />
 
 </LinearLayout>
