@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
 
+
     // Navigation Component (추가)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)

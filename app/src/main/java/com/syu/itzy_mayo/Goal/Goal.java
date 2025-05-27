@@ -1,33 +1,49 @@
 package com.syu.itzy_mayo.Goal;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Goal {
-    public String title;
-    public String time;
-    public List<Integer> daysOfWeek;
-    public boolean isCompleted;
-    public String checkedDate;
-    public String createdDate;
+    private String goalId;
+    private String title;
+    private String time;
+    private List<Integer> daysOfWeek = new ArrayList<>();
+    private String createdDate;
+    private String userId;
+    private boolean isCompleted;
+    private String checkedDate;
+
+    public Goal() {}
 
     public Goal(String title, String time, List<Integer> daysOfWeek) {
         this.title = title;
         this.time = time;
         this.daysOfWeek = daysOfWeek;
-        this.isCompleted = false;
-        this.checkedDate = null;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Goal)) return false;
-        Goal goal = (Goal) obj;
-        return Objects.equals(title, goal.title)
-                && Objects.equals(time, goal.time)
-                && Objects.equals(daysOfWeek, goal.daysOfWeek)
-                && isCompleted == goal.isCompleted
-                && Objects.equals(checkedDate, goal.checkedDate);
-    }
+    // --- Getter & Setter ---
+
+    public String getGoalId() { return goalId; }
+    public void setGoalId(String goalId) { this.goalId = goalId; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
+
+    public List<Integer> getDaysOfWeek() { return daysOfWeek; }
+    public void setDaysOfWeek(List<Integer> daysOfWeek) { this.daysOfWeek = daysOfWeek; }
+
+    public String getCreatedDate() { return createdDate; }
+    public void setCreatedDate(String createdDate) { this.createdDate = createdDate; }
+
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public boolean isCompleted() { return isCompleted; }
+    public void setCompleted(boolean completed) { isCompleted = completed; }
+
+    public String getCheckedDate() { return checkedDate; }
+    public void setCheckedDate(String checkedDate) { this.checkedDate = checkedDate; }
 }
