@@ -15,20 +15,16 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.syu.itzy_mayo.R;
 
-public class GoalPagerFragment extends Fragment {
+import java.util.List;
 
+public class GoalPagerFragment extends Fragment {
     private ViewPager2 viewPager;
     private GoalPagerAdapter pagerAdapter;
-
-    public GoalPagerFragment() {
-        super(R.layout.goal_pager_fragment);
-    }
+    private List<GoalTabFragment> tabFragments;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.goal_pager_fragment, container, false);
 
         TabLayout tabLayout = view.findViewById(R.id.tabLayout);
@@ -43,8 +39,7 @@ public class GoalPagerFragment extends Fragment {
         }).attach();
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
+            @Override public void onPageSelected(int position) {
                 fab.setVisibility(position == 1 ? View.VISIBLE : View.GONE);
             }
         });
@@ -62,9 +57,7 @@ public class GoalPagerFragment extends Fragment {
 
     public void refreshAllTabs() {
         for (Fragment f : getChildFragmentManager().getFragments()) {
-            if (f instanceof GoalTabFragment) {
-                ((GoalTabFragment) f).refresh();
-            }
+            if (f instanceof GoalTabFragment) ((GoalTabFragment) f).refresh();
         }
     }
 }
