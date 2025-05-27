@@ -28,6 +28,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class ScheduleFragment extends Fragment {
 
     private WebView addressWebView;
@@ -43,6 +47,7 @@ public class ScheduleFragment extends Fragment {
     private static final String KEY_LAST_ADDRESS = "lastAddress";
 
     private Context context;
+    private String selectedDate = "";
 
     @Nullable
     @Override
@@ -63,9 +68,17 @@ public class ScheduleFragment extends Fragment {
             return false;
         });
 
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String savedAddress = prefs.getString(KEY_LAST_ADDRESS, "");
-        searchEditText.setText(savedAddress);
+        searchEditText.setText("");
+
+        searchEditText.setOnClickListener(v -> {
+            searchEditText.setText("");
+            if (addressWebView.getVisibility() == View.VISIBLE) {
+                addressWebView.setVisibility(View.GONE);
+            } else {
+                addressWebView.setVisibility(View.VISIBLE);
+                addressWebView.loadUrl("file:///android_asset/kakao_address.html");
+            }
+        });
 
         WebSettings webSettings = addressWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -81,18 +94,20 @@ public class ScheduleFragment extends Fragment {
         addressWebView.addJavascriptInterface(new AndroidBridge(), "AndroidInterface");
         addressWebView.setVisibility(View.GONE);
 
-        searchEditText.setOnClickListener(v -> {
-            if (addressWebView.getVisibility() == View.VISIBLE) {
-                addressWebView.setVisibility(View.GONE);
-            } else {
-                addressWebView.setVisibility(View.VISIBLE);
-                addressWebView.loadUrl("file:///android_asset/kakao_address.html");
-            }
+        // 오늘 날짜 기본값 세팅
+        selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+        // 날짜 선택 시 해당 날짜 일정만 로드
+        calendarView.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
+            selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+            loadScheduleListByDate(selectedDate);
         });
 
         scheduleSaveButton.setOnClickListener(view1 -> {
             String title = scheduleTitleEditText.getText().toString().trim();
             String desc = scheduleDescriptionEditText.getText().toString().trim();
+            String address = searchEditText.getText().toString().trim();
+            String date = selectedDate;
 
             if (title.isEmpty() && desc.isEmpty()) return;
 
@@ -101,10 +116,15 @@ public class ScheduleFragment extends Fragment {
                 JSONObject newItem = new JSONObject();
                 newItem.put("title", title);
                 newItem.put("desc", desc);
+                newItem.put("address", address);
+                newItem.put("date", date);
                 scheduleArray.put(newItem);
 
+                SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
                 prefs.edit().putString(KEY_SCHEDULE_LIST, scheduleArray.toString()).apply();
-                addScheduleView(newItem);
+
+                // 현재 선택된 날짜 일정만 다시 로드
+                loadScheduleListByDate(selectedDate);
 
                 scheduleTitleEditText.setText("");
                 scheduleDescriptionEditText.setText("");
@@ -115,16 +135,23 @@ public class ScheduleFragment extends Fragment {
             }
         });
 
-        loadScheduleList();
+        // 초기 화면에 오늘 날짜 일정만 표시
+        loadScheduleListByDate(selectedDate);
+
         return view;
     }
 
-    private void loadScheduleList() {
+    // 전체 일정 대신 선택 날짜 일정만 보여주는 함수
+    private void loadScheduleListByDate(String date) {
+        savedScheduleList.removeAllViews();
         JSONArray array = getScheduleArray();
         for (int i = 0; i < array.length(); i++) {
             try {
                 JSONObject item = array.getJSONObject(i);
-                addScheduleView(item);
+                String itemDate = item.optString("date", "");
+                if (itemDate.equals(date)) {
+                    addScheduleView(item);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -149,6 +176,8 @@ public class ScheduleFragment extends Fragment {
     private void addScheduleView(JSONObject item) throws JSONException {
         String title = item.getString("title");
         String desc = item.getString("desc");
+        String address = item.optString("address", "");
+        String date = item.optString("date", "");
 
         LinearLayout container = new LinearLayout(context);
         container.setOrientation(LinearLayout.HORIZONTAL);
@@ -156,7 +185,7 @@ public class ScheduleFragment extends Fragment {
         container.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView scheduleView = new TextView(context);
-        scheduleView.setText("\uD83D\uDCCC " + title + "\n\uD83D\uDCDD " + desc);
+        scheduleView.setText("📅 " + date + "\n📍 " + address + "\n📌 " + title + "\n📝 " + desc);
         scheduleView.setBackgroundColor(Color.parseColor("#EEEEEE"));
         scheduleView.setTextSize(16);
         scheduleView.setTextColor(Color.BLACK);
@@ -170,11 +199,13 @@ public class ScheduleFragment extends Fragment {
 
         deleteBtn.setOnClickListener(v -> {
             savedScheduleList.removeView(container);
-            removeFromPrefs(title, desc);
+            removeFromPrefs(title, desc, address, date);
+            // 삭제 후 다시 해당 날짜 일정만 로드
+            loadScheduleListByDate(selectedDate);
         });
 
         container.setOnLongClickListener(v -> {
-            deleteBtn.setVisibility(View.VISIBLE);
+            deleteBtn.setVisibility(deleteBtn.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             return true;
         });
 
@@ -183,13 +214,16 @@ public class ScheduleFragment extends Fragment {
         savedScheduleList.addView(container);
     }
 
-    private void removeFromPrefs(String title, String desc) {
+    private void removeFromPrefs(String title, String desc, String address, String date) {
         JSONArray array = getScheduleArray();
         JSONArray newArray = new JSONArray();
         for (int i = 0; i < array.length(); i++) {
             try {
                 JSONObject obj = array.getJSONObject(i);
-                if (!obj.getString("title").equals(title) || !obj.getString("desc").equals(desc)) {
+                if (!obj.getString("title").equals(title) ||
+                        !obj.getString("desc").equals(desc) ||
+                        !obj.optString("address").equals(address) ||
+                        !obj.optString("date").equals(date)) {
                     newArray.put(obj);
                 }
             } catch (JSONException e) {

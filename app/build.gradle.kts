@@ -26,15 +26,15 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
+
         buildConfigField("String", "NCP_CLIENT_ID",
-            "\"${localProperties.getProperty("NCP_CLIENT_ID", "")}\""
+                "\"${localProperties.getProperty("NCP_CLIENT_ID", "")}\""
         )
         buildConfigField("String", "SUPER_BASE_URL",
-        "\"${localProperties.getProperty("SUPER_BASE_URL", "")}\""
+                "\"${localProperties.getProperty("SUPER_BASE_URL", "")}\""
         )
         buildConfigField("String", "SUPER_BASE_ANON_KEY",
-        "\"${localProperties.getProperty("SUPER_BASE_ANON_KEY", "")}\""
+                "\"${localProperties.getProperty("SUPER_BASE_ANON_KEY", "")}\""
         )
     }
 
@@ -42,8 +42,8 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
             )
         }
     }
@@ -51,7 +51,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    
+
     buildFeatures {
         buildConfig = true
     }
