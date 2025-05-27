@@ -1,85 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FAFAFA">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:background="#FAFAFA">
 
-        <!-- 🔍 주소 검색창 -->
-        <EditText
-            android:id="@+id/searchEditText"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="주소 검색"
-            android:drawableStart="@android:drawable/ic_menu_search"
-            android:drawablePadding="8dp"
-            android:background="@android:drawable/edit_text"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:cursorVisible="false"
-            android:longClickable="false"
-            android:clickable="true"
-            android:layout_marginBottom="8dp" />
-
-        <!-- 🌐 WebView (카카오 주소검색) -->
-        <WebView
-            android:id="@+id/addressWebView"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:scrollbars="vertical"
-            android:overScrollMode="always"
-            android:nestedScrollingEnabled="true"
-            android:visibility="gone" />
-
-        <!-- 📅 달력 -->
-        <CalendarView
-            android:id="@+id/calendarView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp" />
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <!-- 📝 일정 제목 입력 -->
-        <EditText
-            android:id="@+id/scheduleTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="일정 제목"
-            android:inputType="text"
-            android:layout_marginBottom="8dp" />
+            <!-- 주소 검색창 -->
+            <EditText
+                android:id="@+id/searchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="주소 검색"
+                android:drawableStart="@android:drawable/ic_menu_search"
+                android:drawablePadding="8dp"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:textSize="16sp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:cursorVisible="false"
+                android:longClickable="false"
+                android:clickable="true"
+                android:layout_marginBottom="8dp" />
 
-        <!-- 📝 일정 설명 입력 -->
-        <EditText
-            android:id="@+id/scheduleDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="일정 설명"
-            android:inputType="textMultiLine"
-            android:lines="3"
-            android:minLines="2"
-            android:gravity="top"
-            android:layout_marginBottom="16dp" />
+            <!-- WebView -->
+            <WebView
+                android:id="@+id/addressWebView"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:scrollbars="vertical"
+                android:overScrollMode="always"
+                android:nestedScrollingEnabled="true"
+                android:visibility="gone" />
 
-        <!-- 💾 일정 저장 버튼 -->
-        <Button
-            android:id="@+id/scheduleSaveButton"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="일정 저장"
-            android:backgroundTint="#179E8B"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="24dp" />
+            <!-- WebView 닫기용 투명 오버레이 -->
+            <View
+                android:id="@+id/webViewOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_gravity="top"
+                android:visibility="gone"
+                android:background="@android:color/transparent" />
 
-        <!-- ➕ 할 일 입력 + 버튼 -->
+            <!-- 달력 -->
+            <CalendarView
+                android:id="@+id/calendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp" />
 
+            <!-- 일정 제목 입력 -->
+            <EditText
+                android:id="@+id/scheduleTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="일정 제목"
+                android:inputType="text"
+                android:layout_marginBottom="8dp" />
 
-        <!-- 📋 할 일 목록 -->
+            <!-- 일정 설명 입력 -->
+            <EditText
+                android:id="@+id/scheduleDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="일정 설명"
+                android:inputType="textMultiLine"
+                android:lines="3"
+                android:minLines="2"
+                android:gravity="top"
+                android:layout_marginBottom="16dp" />
 
-    </LinearLayout>
-</ScrollView>
+            <!-- 일정 저장 버튼 -->
+            <Button
+                android:id="@+id/scheduleSaveButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="일정 저장"
+                android:backgroundTint="#179E8B"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="24dp" />
+
+            <!-- 저장된 일정 목록 -->
+            <LinearLayout
+                android:id="@+id/savedScheduleList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
