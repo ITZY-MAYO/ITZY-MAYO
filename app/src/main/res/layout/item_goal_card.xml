@@ -1,74 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="6dp"
-    app:strokeWidth="0.5dp"
-    app:strokeColor="@color/purple_200"
-    android:backgroundTint="@android:color/white">
+    android:layout_marginBottom="8dp"
+    card_view:cardElevation="2dp"
+    card_view:cardCornerRadius="12dp"
+    android:padding="40dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvGoalTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/tvGoalTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/goal_title_example"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textStyle="bold"
-                android:textColor="@android:color/black" />
-
-            <CheckBox
-                android:id="@+id/cbGoalDone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginStart="8dp"/>
-        </LinearLayout>
+            android:text="목표 제목"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvGoalTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/goal_time_example"
+            android:text="08:00"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="4dp"/>
-
-        <TextView
-            android:id="@+id/tvGoalStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/goal_status_text"
-            android:textColor="@color/purple_200"
-            android:visibility="gone"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:layout_marginTop="8dp"/>
+            android:paddingTop="2dp" />
 
         <TextView
             android:id="@+id/tvGoalDays"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="월,수,금"
+            android:text="월, 수, 금"
+            android:textSize="13sp"
             android:textColor="@android:color/darker_gray"
-            android:textSize="12sp"
-            android:layout_marginTop="2dp"/>
+            android:paddingTop="2dp" />
+
+        <CheckBox
+            android:id="@+id/cbGoalDone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="완료"
+            android:paddingTop="4dp"
+            android:visibility="gone" />
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

@@ -1,9 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/goalTabRoot"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/tvWeeklyReport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="오늘 목표 달성률: 0%"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:visibility="visible"
+        android:paddingBottom="8dp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/goalRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</FrameLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvEmptyView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="목표가 없습니다."
+        android:gravity="center"
+        android:paddingTop="20dp"
+        android:textSize="14sp"
+        android:visibility="gone"
+        android:textColor="@android:color/darker_gray" />
+</LinearLayout>
