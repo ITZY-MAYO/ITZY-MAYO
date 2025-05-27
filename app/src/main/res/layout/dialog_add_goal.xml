@@ -1,100 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="24dp">
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/etGoalTitle"
+        android:hint="@string/hint_goal_title"
+        android:inputType="text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:minHeight="48dp"
+        android:textColor="#111111"
+        android:autofillHints="username"/>
 
-        <EditText
-            android:id="@+id/etGoalTitle"
-            android:layout_width="match_parent"
+    <EditText
+        android:id="@+id/etGoalTime"
+        android:hint="@string/hint_goal_time"
+        android:inputType="none"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:textColor="#111111"
+        android:autofillHints="username"
+        android:layout_marginTop="8dp"/>
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupDays"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="false">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_sun"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="제목 입력"
-            android:inputType="text"
-            android:textColorHint="#888888"
-            android:importantForAutofill="yes"
-            android:minHeight="48dp"
-            android:textSize="16sp"
-            android:autofillHints="username"
-            android:layout_marginBottom="12dp" />
-
-        <EditText
-            android:id="@+id/etGoalTime"
-            android:layout_width="match_parent"
+            android:text="일"/>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_mon"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="시간 선택 (예: 08:00)"
-            android:focusable="false"
-            android:clickable="true"
-            android:textColorHint="#888888"
-            android:minHeight="48dp"
-            android:textSize="16sp"
-            android:layout_marginBottom="12dp" />
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupDays"
-            android:layout_width="match_parent"
+            android:text="월"/>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_tue"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:singleLine="false"
-            app:chipSpacingHorizontal="8dp"
-            app:chipSpacingVertical="4dp">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipSun"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="일" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipMon"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="월" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipTue"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="화" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipWed"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="수" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipThu"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="목" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipFri"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="금" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipSat"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="토" />
-
-        </com.google.android.material.chip.ChipGroup>
-
-
-    </LinearLayout>
-</ScrollView>
+            android:text="화"/>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_wed"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="수"/>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_thu"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="목"/>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_fri"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="금"/>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_sat"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="토"/>
+    </com.google.android.material.chip.ChipGroup>
+</LinearLayout>
