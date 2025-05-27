@@ -7,7 +7,7 @@ public class SharedGoalList {
     private static SharedGoalList instance;
     private List<Goal> allGoals = new ArrayList<>();
 
-    private SharedGoalList() {}
+    public SharedGoalList() {}
 
     public static SharedGoalList get() {
         if (instance == null) instance = new SharedGoalList();
