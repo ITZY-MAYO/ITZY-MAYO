@@ -10,16 +10,9 @@ public class Schedule {
     private String userId;
     private GeoPoint geoPoint;
     private Timestamp datetime;
+    private String address;
 
     public Schedule() {}
-
-    public Schedule(String title, String content, String userId, GeoPoint geoPoint, Timestamp datetime) {
-        this.title = title;
-        this.content = content;
-        this.userId = userId;
-        this.geoPoint = geoPoint;
-        this.datetime = datetime;
-    }
 
     public String getTitle() {
         return title;
@@ -59,5 +52,22 @@ public class Schedule {
 
     public void setDatetime(Timestamp datetime) {
         this.datetime = datetime;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Schedule(String title, String content, String userId, GeoPoint geoPoint, Timestamp datetime, String address) {
+        this.title = title;
+        this.content = content;
+        this.userId = userId;
+        this.geoPoint = geoPoint;
+        this.datetime = datetime;
+        this.address = address;
     }
 }
