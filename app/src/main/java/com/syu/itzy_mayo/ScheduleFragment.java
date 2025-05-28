@@ -1,9 +1,11 @@
 package com.syu.itzy_mayo;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,60 +14,80 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CalendarView;
-import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+
+import com.syu.itzy_mayo.Schedule.Schedule;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 public class ScheduleFragment extends Fragment {
 
-    private EditText inputTodo;
-    private Button addButton;
-    private LinearLayout todoListLayout;
-    private Button saveButton;
     private WebView addressWebView;
     private EditText searchEditText;
-
-    private CalendarView calendarView;
+    private MaterialCalendarView calendarView;
     private EditText scheduleTitleEditText;
     private EditText scheduleDescriptionEditText;
     private Button scheduleSaveButton;
-
-    private static final String PREFS_NAME = "MyAppPrefs";
-    private static final String KEY_LAST_ADDRESS = "lastAddress";
-    private static final String KEY_LAST_SCHEDULE_TITLE = "lastTitle";
-    private static final String KEY_LAST_SCHEDULE_DESC = "lastDesc";
+    private LinearLayout savedScheduleList;
 
     private Context context;
-
+    private String selectedDate = "";
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_calendar, container, false);
+        View view = inflater.inflate(R.layout.fragment_schedule, container, false);
         context = view.getContext();
 
-        inputTodo = view.findViewById(R.id.inputTodo);
-        addButton = view.findViewById(R.id.addButton);
-        todoListLayout = view.findViewById(R.id.todoListLayout);
-        saveButton = view.findViewById(R.id.saveButton);
         addressWebView = view.findViewById(R.id.addressWebView);
         searchEditText = view.findViewById(R.id.searchEditText);
-
         calendarView = view.findViewById(R.id.calendarView);
         scheduleTitleEditText = view.findViewById(R.id.scheduleTitle);
         scheduleDescriptionEditText = view.findViewById(R.id.scheduleDescription);
         scheduleSaveButton = view.findViewById(R.id.scheduleSaveButton);
+        savedScheduleList = view.findViewById(R.id.savedScheduleList);
 
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String savedAddress = prefs.getString(KEY_LAST_ADDRESS, "");
-        searchEditText.setText(savedAddress);
-        scheduleTitleEditText.setText(prefs.getString(KEY_LAST_SCHEDULE_TITLE, ""));
-        scheduleDescriptionEditText.setText(prefs.getString(KEY_LAST_SCHEDULE_DESC, ""));
+        addressWebView.setOnTouchListener((v, event) -> {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            return false;
+        });
+
+        searchEditText.setText("");
+        searchEditText.setOnClickListener(v -> {
+            searchEditText.setText("");
+            if (addressWebView.getVisibility() == View.VISIBLE) {
+                addressWebView.setVisibility(View.GONE);
+            } else {
+                addressWebView.setVisibility(View.VISIBLE);
+                addressWebView.loadUrl("file:///android_asset/kakao_address.html");
+            }
+        });
 
         WebSettings webSettings = addressWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -73,6 +95,7 @@ public class ScheduleFragment extends Fragment {
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setAllowContentAccess(true);
         webSettings.setAllowFileAccess(true);
+        webSettings.setAllowFileAccessFromFileURLs(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
@@ -80,69 +103,151 @@ public class ScheduleFragment extends Fragment {
         addressWebView.addJavascriptInterface(new AndroidBridge(), "AndroidInterface");
         addressWebView.setVisibility(View.GONE);
 
-        searchEditText.setOnClickListener(v -> {
-            addressWebView.setVisibility(View.VISIBLE);
-            addressWebView.loadUrl("file:///android_asset/kakao_address.html");
-        });
+        selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-        addButton.setOnClickListener(view1 -> {
-            String taskText = inputTodo.getText().toString().trim();
-            if (!taskText.isEmpty()) {
-                addNewTask(taskText);
-                inputTodo.setText("");
-            }
+        calendarView.setOnDateChangedListener((widget, date, selected) -> {
+            selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", date.getYear(), date.getMonth() + 1, date.getDay());
+            loadScheduleFromFirestore(selectedDate);
         });
-
-        saveButton.setOnClickListener(view1 -> saveCheckedTasks());
 
         scheduleSaveButton.setOnClickListener(view1 -> {
-            SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
-            editor.putString(KEY_LAST_SCHEDULE_TITLE, scheduleTitleEditText.getText().toString());
-            editor.putString(KEY_LAST_SCHEDULE_DESC, scheduleDescriptionEditText.getText().toString());
-            editor.apply();
-            Toast.makeText(context, "일정이 저장되었습니다", Toast.LENGTH_SHORT).show();
+            String title = scheduleTitleEditText.getText().toString().trim();
+            String desc = scheduleDescriptionEditText.getText().toString().trim();
+            String address = searchEditText.getText().toString().trim();
+            String date = selectedDate;
+
+            if (title.isEmpty() && desc.isEmpty()) return;
+
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+            if (currentUser == null) {
+                Toast.makeText(context, "로그인이 필요합니다", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String uid = currentUser.getUid();
+            GeoPoint geoPoint = new GeoPoint(37.5665, 126.9780);
+
+            Timestamp timestamp;
+            try {
+                Date parsedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date);
+                timestamp = new Timestamp(parsedDate);
+            } catch (Exception e) {
+                e.printStackTrace();
+                timestamp = Timestamp.now();
+            }
+
+            Schedule schedule = new Schedule(title, desc, uid, geoPoint, timestamp, address);
+
+            db.collection("schedule")
+                    .add(schedule)
+                    .addOnSuccessListener(documentReference -> {
+                        Log.d("Firestore", "일정 저장 성공: " + documentReference.getId());
+                        Toast.makeText(context, "일정이 저장되었습니다", Toast.LENGTH_SHORT).show();
+                        scheduleTitleEditText.setText("");
+                        scheduleDescriptionEditText.setText("");
+                        loadScheduleFromFirestore(selectedDate);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Firestore", "일정 저장 실패", e);
+                        Toast.makeText(context, "일정 저장 실패", Toast.LENGTH_SHORT).show();
+                    });
         });
+
+        loadScheduleFromFirestore(selectedDate);
 
         return view;
     }
 
-    private void addNewTask(String taskText) {
-        CheckBox checkBox = new CheckBox(context);
-        checkBox.setText(taskText);
-        checkBox.setTextColor(0xFF6D4C41);
-        checkBox.setTextSize(16);
-        checkBox.setPadding(0, 0, 0, 12);
-        todoListLayout.addView(checkBox);
+    private void loadScheduleFromFirestore(String selectedDate) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser == null) return;
+
+        String uid = currentUser.getUid();
+
+        db.collection("schedule")
+                .whereEqualTo("userId", uid)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    savedScheduleList.removeAllViews();
+
+                    Set<CalendarDay> eventDates = new HashSet<>();
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Schedule schedule = doc.toObject(Schedule.class);
+                        Date date = schedule.getDatetime().toDate();
+
+                        // 하이라이트 날짜 수집
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(date);
+                        CalendarDay day = CalendarDay.from(calendar);
+                        eventDates.add(day);
+
+                        String scheduleDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
+                        if (scheduleDate.equals(selectedDate)) {
+                            try {
+                                JSONObject item = new JSONObject();
+                                item.put("title", schedule.getTitle());
+                                item.put("desc", schedule.getContent());
+                                item.put("address", schedule.getAddress());
+                                item.put("date", scheduleDate);
+                                addScheduleView(item);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    // 점 찍기 데코레이터 추가
+                    calendarView.removeDecorators(); // 중복 방지
+                    calendarView.addDecorator(new EventDecorator(Color.RED, eventDates));
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "불러오기 실패", e));
     }
 
-    private void saveCheckedTasks() {
-        StringBuilder saved = new StringBuilder("저장된 항목:\n");
-        boolean hasChecked = false;
+    private void addScheduleView(JSONObject item) throws JSONException {
+        String title = item.getString("title");
+        String desc = item.getString("desc");
+        String address = item.optString("address", "");
+        String date = item.optString("date", "");
 
-        for (int i = 0; i < todoListLayout.getChildCount(); i++) {
-            View child = todoListLayout.getChildAt(i);
-            if (child instanceof CheckBox) {
-                CheckBox cb = (CheckBox) child;
-                if (cb.isChecked()) {
-                    saved.append("- ").append(cb.getText().toString()).append("\n");
-                    hasChecked = true;
-                }
-            }
-        }
+        LinearLayout container = new LinearLayout(context);
+        container.setOrientation(LinearLayout.HORIZONTAL);
+        container.setPadding(0, 0, 0, 12);
+        container.setGravity(Gravity.CENTER_VERTICAL);
 
-        Toast.makeText(context, hasChecked ? saved.toString() : "선택된 항목이 없습니다.", Toast.LENGTH_SHORT).show();
+        TextView scheduleView = new TextView(context);
+        scheduleView.setText("\uD83D\uDCC5 " + date + "\n\uD83D\uDCCD " + address + "\n\uD83D\uDCCC " + title + "\n\uD83D\uDCDD " + desc);
+        scheduleView.setBackgroundColor(0xFFEEEEEE);
+        scheduleView.setTextSize(16);
+        scheduleView.setTextColor(0xFF000000);
+        scheduleView.setPadding(12, 12, 12, 12);
+        scheduleView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+
+        ImageButton deleteBtn = new ImageButton(context);
+        deleteBtn.setImageResource(android.R.drawable.ic_menu_delete);
+        deleteBtn.setBackgroundColor(0x00000000);
+        deleteBtn.setVisibility(View.GONE);
+
+        container.setOnLongClickListener(v -> {
+            deleteBtn.setVisibility(deleteBtn.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            return true;
+        });
+
+        container.addView(scheduleView);
+        container.addView(deleteBtn);
+        savedScheduleList.addView(container);
     }
 
     private class AndroidBridge {
         @JavascriptInterface
         public void onAddressSelected(final String address) {
             if (getActivity() == null) return;
-            getActivity().runOnUiThread(() -> {
-                SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-                prefs.edit().putString(KEY_LAST_ADDRESS, address).apply();
-                searchEditText.setText(address);
-                addressWebView.setVisibility(View.GONE);
-            });
+            getActivity().runOnUiThread(() -> searchEditText.setText(address));
+            addressWebView.setVisibility(View.GONE);
         }
     }
 }
