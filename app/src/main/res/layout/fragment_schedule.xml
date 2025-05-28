@@ -59,8 +59,8 @@
                     android:visibility="gone"
                     android:background="@android:color/transparent" />
 
-                <!-- 달력 -->
-                <CalendarView
+                <!-- MaterialCalendarView -->
+                <com.prolificinteractive.materialcalendarview.MaterialCalendarView
                     android:id="@+id/calendarView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

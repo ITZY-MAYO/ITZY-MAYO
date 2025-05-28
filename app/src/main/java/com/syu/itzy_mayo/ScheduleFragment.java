@@ -1,10 +1,10 @@
 package com.syu.itzy_mayo;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,27 +24,37 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import org.json.JSONArray;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+
+import com.syu.itzy_mayo.Schedule.Schedule;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 public class ScheduleFragment extends Fragment {
 
     private WebView addressWebView;
     private EditText searchEditText;
-    private CalendarView calendarView;
+    private MaterialCalendarView calendarView;
     private EditText scheduleTitleEditText;
     private EditText scheduleDescriptionEditText;
     private Button scheduleSaveButton;
     private LinearLayout savedScheduleList;
-
-    private static final String PREFS_NAME = "MyAppPrefs";
-    private static final String KEY_SCHEDULE_LIST = "scheduleList";
-    private static final String KEY_LAST_ADDRESS = "lastAddress";
 
     private Context context;
     private String selectedDate = "";
@@ -69,7 +79,6 @@ public class ScheduleFragment extends Fragment {
         });
 
         searchEditText.setText("");
-
         searchEditText.setOnClickListener(v -> {
             searchEditText.setText("");
             if (addressWebView.getVisibility() == View.VISIBLE) {
@@ -94,13 +103,11 @@ public class ScheduleFragment extends Fragment {
         addressWebView.addJavascriptInterface(new AndroidBridge(), "AndroidInterface");
         addressWebView.setVisibility(View.GONE);
 
-        // 오늘 날짜 기본값 세팅
         selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-        // 날짜 선택 시 해당 날짜 일정만 로드
-        calendarView.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
-            selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
-            loadScheduleListByDate(selectedDate);
+        calendarView.setOnDateChangedListener((widget, date, selected) -> {
+            selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", date.getYear(), date.getMonth() + 1, date.getDay());
+            loadScheduleFromFirestore(selectedDate);
         });
 
         scheduleSaveButton.setOnClickListener(view1 -> {
@@ -111,66 +118,94 @@ public class ScheduleFragment extends Fragment {
 
             if (title.isEmpty() && desc.isEmpty()) return;
 
-            try {
-                JSONArray scheduleArray = getScheduleArray();
-                JSONObject newItem = new JSONObject();
-                newItem.put("title", title);
-                newItem.put("desc", desc);
-                newItem.put("address", address);
-                newItem.put("date", date);
-                scheduleArray.put(newItem);
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-                SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-                prefs.edit().putString(KEY_SCHEDULE_LIST, scheduleArray.toString()).apply();
-
-                // 현재 선택된 날짜 일정만 다시 로드
-                loadScheduleListByDate(selectedDate);
-
-                scheduleTitleEditText.setText("");
-                scheduleDescriptionEditText.setText("");
-
-                Toast.makeText(context, "일정이 저장되었습니다", Toast.LENGTH_SHORT).show();
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if (currentUser == null) {
+                Toast.makeText(context, "로그인이 필요합니다", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            String uid = currentUser.getUid();
+            GeoPoint geoPoint = new GeoPoint(37.5665, 126.9780);
+
+            Timestamp timestamp;
+            try {
+                Date parsedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date);
+                timestamp = new Timestamp(parsedDate);
+            } catch (Exception e) {
+                e.printStackTrace();
+                timestamp = Timestamp.now();
+            }
+
+            Schedule schedule = new Schedule(title, desc, uid, geoPoint, timestamp, address);
+
+            db.collection("schedule")
+                    .add(schedule)
+                    .addOnSuccessListener(documentReference -> {
+                        Log.d("Firestore", "일정 저장 성공: " + documentReference.getId());
+                        Toast.makeText(context, "일정이 저장되었습니다", Toast.LENGTH_SHORT).show();
+                        scheduleTitleEditText.setText("");
+                        scheduleDescriptionEditText.setText("");
+                        loadScheduleFromFirestore(selectedDate);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Firestore", "일정 저장 실패", e);
+                        Toast.makeText(context, "일정 저장 실패", Toast.LENGTH_SHORT).show();
+                    });
         });
 
-        // 초기 화면에 오늘 날짜 일정만 표시
-        loadScheduleListByDate(selectedDate);
+        loadScheduleFromFirestore(selectedDate);
 
         return view;
     }
 
-    // 전체 일정 대신 선택 날짜 일정만 보여주는 함수
-    private void loadScheduleListByDate(String date) {
-        savedScheduleList.removeAllViews();
-        JSONArray array = getScheduleArray();
-        for (int i = 0; i < array.length(); i++) {
-            try {
-                JSONObject item = array.getJSONObject(i);
-                String itemDate = item.optString("date", "");
-                if (itemDate.equals(date)) {
-                    addScheduleView(item);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    private void loadScheduleFromFirestore(String selectedDate) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-    private JSONArray getScheduleArray() {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String json = prefs.getString(KEY_SCHEDULE_LIST, "[]");
-        try {
-            return new JSONArray(json);
-        } catch (JSONException e) {
-            return new JSONArray();
-        }
-    }
+        if (currentUser == null) return;
 
-    private void saveScheduleArray(JSONArray array) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_SCHEDULE_LIST, array.toString()).apply();
+        String uid = currentUser.getUid();
+
+        db.collection("schedule")
+                .whereEqualTo("userId", uid)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    savedScheduleList.removeAllViews();
+
+                    Set<CalendarDay> eventDates = new HashSet<>();
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Schedule schedule = doc.toObject(Schedule.class);
+                        Date date = schedule.getDatetime().toDate();
+
+                        // 하이라이트 날짜 수집
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(date);
+                        CalendarDay day = CalendarDay.from(calendar);
+                        eventDates.add(day);
+
+                        String scheduleDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
+                        if (scheduleDate.equals(selectedDate)) {
+                            try {
+                                JSONObject item = new JSONObject();
+                                item.put("title", schedule.getTitle());
+                                item.put("desc", schedule.getContent());
+                                item.put("address", schedule.getAddress());
+                                item.put("date", scheduleDate);
+                                addScheduleView(item);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    // 점 찍기 데코레이터 추가
+                    calendarView.removeDecorators(); // 중복 방지
+                    calendarView.addDecorator(new EventDecorator(Color.RED, eventDates));
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "불러오기 실패", e));
     }
 
     private void addScheduleView(JSONObject item) throws JSONException {
@@ -185,24 +220,17 @@ public class ScheduleFragment extends Fragment {
         container.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView scheduleView = new TextView(context);
-        scheduleView.setText("📅 " + date + "\n📍 " + address + "\n📌 " + title + "\n📝 " + desc);
-        scheduleView.setBackgroundColor(Color.parseColor("#EEEEEE"));
+        scheduleView.setText("\uD83D\uDCC5 " + date + "\n\uD83D\uDCCD " + address + "\n\uD83D\uDCCC " + title + "\n\uD83D\uDCDD " + desc);
+        scheduleView.setBackgroundColor(0xFFEEEEEE);
         scheduleView.setTextSize(16);
-        scheduleView.setTextColor(Color.BLACK);
+        scheduleView.setTextColor(0xFF000000);
         scheduleView.setPadding(12, 12, 12, 12);
         scheduleView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
         ImageButton deleteBtn = new ImageButton(context);
         deleteBtn.setImageResource(android.R.drawable.ic_menu_delete);
-        deleteBtn.setBackgroundColor(Color.TRANSPARENT);
+        deleteBtn.setBackgroundColor(0x00000000);
         deleteBtn.setVisibility(View.GONE);
-
-        deleteBtn.setOnClickListener(v -> {
-            savedScheduleList.removeView(container);
-            removeFromPrefs(title, desc, address, date);
-            // 삭제 후 다시 해당 날짜 일정만 로드
-            loadScheduleListByDate(selectedDate);
-        });
 
         container.setOnLongClickListener(v -> {
             deleteBtn.setVisibility(deleteBtn.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -214,35 +242,12 @@ public class ScheduleFragment extends Fragment {
         savedScheduleList.addView(container);
     }
 
-    private void removeFromPrefs(String title, String desc, String address, String date) {
-        JSONArray array = getScheduleArray();
-        JSONArray newArray = new JSONArray();
-        for (int i = 0; i < array.length(); i++) {
-            try {
-                JSONObject obj = array.getJSONObject(i);
-                if (!obj.getString("title").equals(title) ||
-                        !obj.getString("desc").equals(desc) ||
-                        !obj.optString("address").equals(address) ||
-                        !obj.optString("date").equals(date)) {
-                    newArray.put(obj);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        saveScheduleArray(newArray);
-    }
-
     private class AndroidBridge {
         @JavascriptInterface
         public void onAddressSelected(final String address) {
             if (getActivity() == null) return;
-            getActivity().runOnUiThread(() -> {
-                SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-                prefs.edit().putString(KEY_LAST_ADDRESS, address).apply();
-                searchEditText.setText(address);
-                addressWebView.setVisibility(View.GONE);
-            });
+            getActivity().runOnUiThread(() -> searchEditText.setText(address));
+            addressWebView.setVisibility(View.GONE);
         }
     }
 }
