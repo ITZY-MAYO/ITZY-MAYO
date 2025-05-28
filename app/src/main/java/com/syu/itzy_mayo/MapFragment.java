@@ -45,7 +45,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
     private final ArrayMap<String, Marker> mapMarkers = new ArrayMap<>();
     private ListenerRegistration scheduleListener;
     private UserSessionManager sessionManager;
-    FirebaseFirestore db;
+    private FirebaseFirestore db;
 
     private void listenScheduleMarkers() {
         if (sessionManager.isLoggedIn()) {
