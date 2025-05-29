@@ -47,4 +47,7 @@
     <string name="nav_schedule">일정 추가</string>
     <string name="nav_goal">목표</string>
     <string name="nav_settings">설정</string>
+    <string name="result_title">결과</string>
+    <string name="score_label">Score: 0</string>
+    <string name="time_label">Time: 00:00</string>
 </resources>
