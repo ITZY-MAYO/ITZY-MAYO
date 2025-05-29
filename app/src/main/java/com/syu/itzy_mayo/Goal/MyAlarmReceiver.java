@@ -22,8 +22,6 @@ public class MyAlarmReceiver extends BroadcastReceiver {
         String title = intent.getStringExtra("title");
         String time  = intent.getStringExtra("goalTime");
 
-        // 향후 확장을 위한 goalId도 포함 가능
-        // String goalId = intent.getStringExtra("goalId");
 
         if (msg != null && msg.contains("아직 목표를 완료하지 않았습니다")) {
             List<Goal> allGoals = SharedGoalList.get().getAllGoals();
@@ -44,7 +42,6 @@ public class MyAlarmReceiver extends BroadcastReceiver {
             manager.createNotificationChannel(channel);
         }
 
-        // 알림 클릭 시 MainActivity 실행
         Intent activityIntent = new Intent(context, MainActivity.class);
         activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -62,7 +59,6 @@ public class MyAlarmReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent); // 클릭 시 실행
 
-        // Android 13+ 권한 체크
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)
                     != android.content.pm.PackageManager.PERMISSION_GRANTED) {
