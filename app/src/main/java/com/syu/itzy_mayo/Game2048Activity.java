@@ -33,11 +33,6 @@ public class Game2048Activity extends BaseGameActivity {
     }
 
     @Override
-    protected boolean useRuntimeTimer() {
-        return true;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
