@@ -22,6 +22,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
     protected FrameLayout gameInnerContainer;
     private ImageButton pauseButton;
     private boolean isPaused = false;
+    protected boolean hasGameStarted = false; // ✅ 게임 시작 여부 플래그 추가
 
     protected TextView questionText;
     protected TextView timerText;
@@ -81,7 +82,10 @@ public abstract class BaseGameActivity extends AppCompatActivity {
 
                 for (Button button : answerButtons) {
                     if (button != null) {
-                        button.setOnClickListener(v -> checkAnswer(((Button) v).getText().toString()));
+                        button.setOnClickListener(v -> {
+                            maybeStartRuntimeTimer(); // ✅ 버튼 클릭 시 타이머 시작
+                            checkAnswer(((Button) v).getText().toString());
+                        });
                     }
                 }
             }
@@ -89,10 +93,6 @@ public abstract class BaseGameActivity extends AppCompatActivity {
 
         runtimeText = findViewById(R.id.text_runtime);
         scoreText = findViewById(R.id.text_score);
-
-        if (useRuntimeTimer()) {
-            runtimeHandler.postDelayed(runtimeRunnable, 1000);
-        }
 
         if (contentLayoutRes != 0) {
             generateNewQuestion();
@@ -109,7 +109,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         }
     }
 
-    private void pauseGame() {
+    protected void pauseGame() {
         if (questionTimer != null) questionTimer.cancel();
         runtimeHandler.removeCallbacks(runtimeRunnable);
         for (Button btn : answerButtons) {
@@ -218,5 +218,18 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         super.onDestroy();
         runtimeHandler.removeCallbacks(runtimeRunnable);
         if (questionTimer != null) questionTimer.cancel();
+    }
+
+    protected void startRuntimeTimerIfNeeded() {
+        if (useRuntimeTimer()) {
+            runtimeHandler.postDelayed(runtimeRunnable, 1000);
+        }
+    }
+
+    protected void maybeStartRuntimeTimer() {
+        if (!hasGameStarted) {
+            hasGameStarted = true;
+            startRuntimeTimerIfNeeded();
+        }
     }
 }
