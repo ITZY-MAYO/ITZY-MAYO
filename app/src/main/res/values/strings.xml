@@ -19,6 +19,8 @@
     <string name="coming_soon">Guess Number</string>
     <string name="game_2048">2048</string>
     <string name="pause">Pause</string>
+    <string name="intro_game_description">게임 설명을 여기에 적습니다.\n(예: 좌우 화살표로 점프)</string>
+    <string name="start">START</string>
     <string name="remaining_attempts_format">남은 기회: %1$d / %2$d</string>
     <string name="enter_number_hint">숫자를 입력하세요</string>
     <string name="guess_button_text">추측하기</string>
