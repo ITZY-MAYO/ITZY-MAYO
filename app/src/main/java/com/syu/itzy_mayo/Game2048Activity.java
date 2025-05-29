@@ -64,7 +64,7 @@ public class Game2048Activity extends BaseGameActivity {
 
             // ✅ Game Over 텍스트를 Java 코드로 최상단에 추가
             gameOverText = new TextView(this);
-            gameOverText.setText("Game Over");
+            gameOverText.setText(getString(R.string.game_over));
             gameOverText.setTextSize(32);
             gameOverText.setTextColor(Color.WHITE);
             gameOverText.setTypeface(Typeface.DEFAULT_BOLD);
