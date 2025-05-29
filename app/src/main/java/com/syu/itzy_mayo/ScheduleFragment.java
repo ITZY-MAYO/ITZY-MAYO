@@ -13,7 +13,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -24,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -180,7 +178,6 @@ public class ScheduleFragment extends Fragment {
                         Schedule schedule = doc.toObject(Schedule.class);
                         Date date = schedule.getDatetime().toDate();
 
-                        // 하이라이트 날짜 수집
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(date);
                         CalendarDay day = CalendarDay.from(calendar);
@@ -194,6 +191,7 @@ public class ScheduleFragment extends Fragment {
                                 item.put("desc", schedule.getContent());
                                 item.put("address", schedule.getAddress());
                                 item.put("date", scheduleDate);
+                                item.put("docId", doc.getId()); // 🔥 문서 ID 추가
                                 addScheduleView(item);
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -201,8 +199,7 @@ public class ScheduleFragment extends Fragment {
                         }
                     }
 
-                    // 점 찍기 데코레이터 추가
-                    calendarView.removeDecorators(); // 중복 방지
+                    calendarView.removeDecorators();
                     calendarView.addDecorator(new EventDecorator(Color.RED, eventDates));
                 })
                 .addOnFailureListener(e -> Log.e("Firestore", "불러오기 실패", e));
@@ -213,6 +210,7 @@ public class ScheduleFragment extends Fragment {
         String desc = item.getString("desc");
         String address = item.optString("address", "");
         String date = item.optString("date", "");
+        String docId = item.optString("docId", ""); // 🔥 문서 ID 받기
 
         LinearLayout container = new LinearLayout(context);
         container.setOrientation(LinearLayout.HORIZONTAL);
@@ -231,6 +229,19 @@ public class ScheduleFragment extends Fragment {
         deleteBtn.setImageResource(android.R.drawable.ic_menu_delete);
         deleteBtn.setBackgroundColor(0x00000000);
         deleteBtn.setVisibility(View.GONE);
+
+        deleteBtn.setOnClickListener(v -> {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("schedule").document(docId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(context, "일정이 삭제되었습니다", Toast.LENGTH_SHORT).show();
+                        savedScheduleList.removeView(container);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(context, "삭제 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        });
 
         container.setOnLongClickListener(v -> {
             deleteBtn.setVisibility(deleteBtn.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
