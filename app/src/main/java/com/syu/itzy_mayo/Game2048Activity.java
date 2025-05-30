@@ -19,6 +19,7 @@ public class Game2048Activity extends BaseGameActivity {
     private final int GRID_SIZE = 4;
     private final TextView[][] cells = new TextView[GRID_SIZE][GRID_SIZE];
     private final Random random = new Random();
+    @SuppressWarnings("FieldCanBeLocal")
     private float startX, startY;
     private final float SWIPE_THRESHOLD = 100; // 스와이프 인식 최소 거리
     private int score = 0;
