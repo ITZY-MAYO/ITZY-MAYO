@@ -19,6 +19,8 @@ public class Game2048Activity extends BaseGameActivity {
     private final int GRID_SIZE = 4;
     private final TextView[][] cells = new TextView[GRID_SIZE][GRID_SIZE];
     private final Random random = new Random();
+    private float startX, startY;
+    private final float SWIPE_THRESHOLD = 100; // 스와이프 인식 최소 거리
     private int score = 0;
     private TextView gameOverText;
 
@@ -188,7 +190,46 @@ public class Game2048Activity extends BaseGameActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return false;
+        if (isGamePaused()) return true;
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startX = event.getX();
+                startY = event.getY();
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                float endX = event.getX();
+                float endY = event.getY();
+
+                float deltaX = endX - startX;
+                float deltaY = endY - startY;
+
+                boolean moved = false;
+
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // 좌우 스와이프
+                    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+                        if (deltaX > 0) moved = swipeRight();
+                        else moved = swipeLeft();
+                    }
+                } else {
+                    // 상하 스와이프
+                    if (Math.abs(deltaY) > SWIPE_THRESHOLD) {
+                        if (deltaY > 0) moved = swipeDown();
+                        else moved = swipeUp();
+                    }
+                }
+
+                if (moved) addRandomTile();
+
+                if (isBoardFull() && cannotMove()) {
+                    new android.os.Handler().postDelayed(this::showGameOver, 100);
+                }
+
+                return true;
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
