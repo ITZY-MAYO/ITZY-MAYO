@@ -21,7 +21,6 @@ public class Game2048Activity extends BaseGameActivity {
     private final Random random = new Random();
     @SuppressWarnings("FieldCanBeLocal")
     private float startX, startY;
-    private final float SWIPE_THRESHOLD = 100; // 스와이프 인식 최소 거리
     private int score = 0;
     private TextView gameOverText;
 
@@ -192,6 +191,8 @@ public class Game2048Activity extends BaseGameActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (isGamePaused()) return true;
+
+        final float SWIPE_THRESHOLD = 100f; // 스와이프 인식 최소 거리
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
