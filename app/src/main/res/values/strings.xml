@@ -50,4 +50,8 @@
     <string name="result_title">결과</string>
     <string name="score_label">Score: 0</string>
     <string name="time_label">Time: 00:00</string>
+    <string name="answer_5">5</string>
+    <string name="answer_6">6</string>
+    <string name="answer_7">7</string>
+    <string name="answer_8">8</string>
 </resources>
