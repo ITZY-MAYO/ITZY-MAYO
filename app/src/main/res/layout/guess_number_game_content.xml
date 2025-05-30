@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:text="@string/remaining_attempts_label"
         android:layout_marginTop="12dp"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:textColor="#333333" />
 
     <EditText
         android:id="@+id/inputNumber"
@@ -21,7 +22,8 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         android:hint="@string/enter_number_hint"
-        android:layout_marginTop="12dp" />
+        android:layout_marginTop="12dp"
+        android:textColor="#333333" />
 
     <Button
         android:id="@+id/guessButton"
@@ -36,7 +38,8 @@
         android:layout_height="wrap_content"
         android:text="@string/result_placeholder"
         android:textSize="20sp"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="20dp"
+        android:textColor="#333333" />
 
     <Button
         android:id="@+id/restartButton"
