@@ -16,10 +16,13 @@ import android.view.View;
 public class Game2048Activity extends BaseGameActivity {
 
     private GridLayout gridLayout;
-    private TextView gameOverText;
     private final int GRID_SIZE = 4;
     private final TextView[][] cells = new TextView[GRID_SIZE][GRID_SIZE];
     private final Random random = new Random();
+    @SuppressWarnings("FieldCanBeLocal")
+    private float startX, startY;
+    private int score = 0;
+    private TextView gameOverText;
 
     @Override
     protected int getLayoutResId() {
@@ -28,19 +31,13 @@ public class Game2048Activity extends BaseGameActivity {
 
     @Override
     protected int getGameContentLayoutRes() {
-        return 0; // View를 직접 구성하므로 필요 없음
-    }
-
-    @Override
-    protected boolean useRuntimeTimer() {
-        return false; // 시간 타이머 기능 끄기.
+        return R.layout.game_2048_content;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        gameOverText = findViewById(R.id.game_over_text);
         FrameLayout innerContainer = findViewById(R.id.game_inner_container);
 
         innerContainer.post(() -> {
@@ -66,15 +63,38 @@ public class Game2048Activity extends BaseGameActivity {
             }
 
             innerContainer.addView(gridLayout);
+
+            // ✅ Game Over 텍스트를 Java 코드로 최상단에 추가
+            gameOverText = new TextView(this);
+            gameOverText.setText(getString(R.string.game_over));
+            gameOverText.setTextSize(32);
+            gameOverText.setTextColor(Color.WHITE);
+            gameOverText.setTypeface(Typeface.DEFAULT_BOLD);
+            gameOverText.setGravity(Gravity.CENTER);
+            gameOverText.setBackgroundColor(Color.parseColor("#80000000"));
+            gameOverText.setVisibility(View.GONE);
+            gameOverText.setElevation(10f);
+
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.gravity = Gravity.CENTER;
+            innerContainer.addView(gameOverText, params);
+
             addRandomTile();
             addRandomTile();
+            updateScoreText();
+            startRuntimeTimerIfNeeded(); // start the timer only after everything is ready
         });
     }
 
     private void showGameOver() {
-        gameOverText.setVisibility(View.VISIBLE);
-        gameOverText.bringToFront();
-        gameOverText.invalidate();
+        if (gameOverText != null) {
+            gameOverText.setVisibility(View.VISIBLE);
+            gameOverText.bringToFront();
+        }
+        pauseGame(); // ensure the timer stops
     }
 
     private TextView createCell(int size) {
@@ -89,6 +109,17 @@ public class Game2048Activity extends BaseGameActivity {
         cell.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
         cell.setBackgroundColor(Color.LTGRAY);
         return cell;
+    }
+
+    private void increaseScore(int value) {
+        score += value;
+        updateScoreText();
+    }
+
+    private void updateScoreText() {
+        if (scoreText != null) {
+            scoreText.setText(getString(R.string.score_format, score));
+        }
     }
 
     private boolean canMove() {
@@ -159,7 +190,48 @@ public class Game2048Activity extends BaseGameActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return false;
+        if (isGamePaused()) return true;
+
+        final float SWIPE_THRESHOLD = 100f; // 스와이프 인식 최소 거리
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startX = event.getX();
+                startY = event.getY();
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                float endX = event.getX();
+                float endY = event.getY();
+
+                float deltaX = endX - startX;
+                float deltaY = endY - startY;
+
+                boolean moved = false;
+
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // 좌우 스와이프
+                    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+                        if (deltaX > 0) moved = swipeRight();
+                        else moved = swipeLeft();
+                    }
+                } else {
+                    // 상하 스와이프
+                    if (Math.abs(deltaY) > SWIPE_THRESHOLD) {
+                        if (deltaY > 0) moved = swipeDown();
+                        else moved = swipeUp();
+                    }
+                }
+
+                if (moved) addRandomTile();
+
+                if (isBoardFull() && cannotMove()) {
+                    new android.os.Handler().postDelayed(this::showGameOver, 100);
+                }
+
+                return true;
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -199,6 +271,7 @@ public class Game2048Activity extends BaseGameActivity {
                         newRow[index - 1] *= 2;
                         merged[index - 1] = true;
                         moved = true;
+                        increaseScore(newRow[index - 1]);
                     } else {
                         if (newRow[index] != 0) moved = true;
                         newRow[index++] = value;
@@ -231,6 +304,7 @@ public class Game2048Activity extends BaseGameActivity {
                         newRow[index + 1] *= 2;
                         merged[index + 1] = true;
                         moved = true;
+                        increaseScore(newRow[index + 1]);
                     } else {
                         if (newRow[index] != 0) moved = true;
                         newRow[index--] = value;
@@ -263,6 +337,7 @@ public class Game2048Activity extends BaseGameActivity {
                         newCol[index - 1] *= 2;
                         merged[index - 1] = true;
                         moved = true;
+                        increaseScore(newCol[index - 1]);
                     } else {
                         if (newCol[index] != 0) moved = true;
                         newCol[index++] = value;
@@ -295,6 +370,7 @@ public class Game2048Activity extends BaseGameActivity {
                         newCol[index + 1] *= 2;
                         merged[index + 1] = true;
                         moved = true;
+                        increaseScore(newCol[index + 1]);
                     } else {
                         if (newCol[index] != 0) moved = true;
                         newCol[index--] = value;

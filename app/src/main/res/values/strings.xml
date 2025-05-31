@@ -19,14 +19,39 @@
     <string name="coming_soon">Guess Number</string>
     <string name="game_2048">2048</string>
     <string name="pause">Pause</string>
+    <string name="intro_game_description">게임 설명을 여기에 적습니다.\n(예: 좌우 화살표로 점프)</string>
+    <string name="start">START</string>
+    <string name="remaining_attempts_format">남은 기회: %1$d / %2$d</string>
+    <string name="enter_number_hint">숫자를 입력하세요</string>
+    <string name="guess_button_text">추측하기</string>
+    <string name="result_placeholder">결과가 여기에 표시됩니다</string>
+    <string name="restart_button_text">다시 시작</string>
+    <string name="select_difficulty_title">난이도를 선택하세요</string>
+    <string name="start_game_button">게임 시작하기</string>
+    <string name="correct_answer">정답입니다! 🎉</string>
+    <string name="wrong_up">UP!</string>
+    <string name="wrong_down">DOWN!</string>
+    <string name="game_failed">실패! 정답은 %1$d</string>
+    <string name="remaining_attempts_label">남은 기회:</string>
+    <string name="back_button">뒤로가기</string>
     <string-array name="difficulty_levels">
         <item>쉬움 (20회)</item>
         <item>보통 (15회)</item>
         <item>어려움 (10회)</item>
     </string-array>
+    <string name="difficulty_easy">쉬움 (20회)</string>
+    <string name="difficulty_normal">보통 (15회)</string>
+    <string name="difficulty_hard">어려움 (10회)</string>
     <string name="nav_home">홈</string>
     <string name="nav_games">게임</string>
     <string name="nav_schedule">일정 추가</string>
     <string name="nav_goal">목표</string>
     <string name="nav_settings">설정</string>
+    <string name="result_title">결과</string>
+    <string name="score_label">Score: 0</string>
+    <string name="time_label">Time: 00:00</string>
+    <string name="answer_5">5</string>
+    <string name="answer_6">6</string>
+    <string name="answer_7">7</string>
+    <string name="answer_8">8</string>
 </resources>

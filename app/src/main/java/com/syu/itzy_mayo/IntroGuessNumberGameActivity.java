@@ -19,7 +19,7 @@ public class IntroGuessNumberGameActivity extends AppCompatActivity {
 
         Button start = findViewById(R.id.btn_start);
         start.setOnClickListener(v -> {
-            Intent intent = new Intent(this, GuessNumberActivity.class);
+            Intent intent = new Intent(this, SelectDifficultyActivity.class);
             startActivity(intent);
         });
 
