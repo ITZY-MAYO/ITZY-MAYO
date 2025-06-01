@@ -1,5 +1,6 @@
 package com.syu.itzy_mayo;
 
+import com.syu.itzy_mayo.GameResultActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -119,7 +120,29 @@ public class MemoryGameActivity extends BaseGameActivity {
                 }
                 firstCard = secondCard = null;
                 isFlipping = false;
+
+                // 모든 카드가 맞춰졌으면 결과 화면으로 이동
+                if (matchCount == icons.length) {
+                    showResult();
+                }
             }, 1000);
         }
+    }
+
+    // 결과 화면으로 이동하는 메서드
+    private void showResult() {
+        int score = matchCount * 10;  // 점수 계산 방식
+        long elapsedMillis = getElapsedTime();  // BaseGameActivity로부터 상속된 시간 함수
+        int seconds = (int) (elapsedMillis / 1000);
+        int minutes = seconds / 60;
+        seconds %= 60;
+
+        String timeFormatted = String.format("%02d:%02d", minutes, seconds);
+
+        android.content.Intent intent = new android.content.Intent(this, GameResultActivity.class);
+        intent.putExtra("score", score);
+        intent.putExtra("time", timeFormatted);
+        startActivity(intent);
+        finish();
     }
 }
