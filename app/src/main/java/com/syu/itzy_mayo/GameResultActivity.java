@@ -16,7 +16,7 @@ public class GameResultActivity extends AppCompatActivity {
         int score = getIntent().getIntExtra("score", 0);
         String time = getIntent().getStringExtra("time");
 
-        scoreText.setText("Score: " + score);
-        timeText.setText("Time: " + time);
+        scoreText.setText(getString(R.string.score_format, score));
+        timeText.setText(getString(R.string.result_time_format, time));
     }
 }
