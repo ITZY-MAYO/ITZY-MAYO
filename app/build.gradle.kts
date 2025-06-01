@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation("com.prolificinteractive:material-calendarview:1.4.3")
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 
 
     // Navigation Component (추가)

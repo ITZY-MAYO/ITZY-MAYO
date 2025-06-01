@@ -14,23 +14,57 @@
             height: 100%;
         }
     </style>
+    <!-- Kakao 지도 API (주소 → 좌표 변환 포함) -->
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=🔑106b1a3fbc307c99977a744210efa224&libraries=services"></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
 <div id="wrap"></div>
 
 <script>
-    function sendToAndroid(address) {
+    // AndroidInterface 객체가 로드되었는지 확인하고 실행
+    function waitForAndroidInterface(callback, retries = 10, delay = 300) {
         if (window.AndroidInterface && AndroidInterface.onAddressSelected) {
-            AndroidInterface.onAddressSelected(address);
+            callback();
+        } else if (retries > 0) {
+            setTimeout(() => {
+                waitForAndroidInterface(callback, retries - 1, delay);
+            }, delay);
+        } else {
+            alert("Android 연동 실패: 인터페이스를 찾을 수 없습니다.");
         }
     }
 
+    // Android로 주소 + 좌표 전송
+    function sendToAndroid(address, lat, lng) {
+        if (window.AndroidInterface && AndroidInterface.onAddressSelected) {
+            AndroidInterface.onAddressSelected(address, lat.toString(), lng.toString());
+        }
+    }
+
+    // 페이지 로딩 시 주소 검색창 실행
     window.onload = function () {
         new daum.Postcode({
             oncomplete: function(data) {
-                var fullAddr = data.roadAddress + " (" + data.jibunAddress + ") [" + data.zonecode + "]";
-                sendToAndroid(fullAddr);
+                var fullAddr = data.roadAddress || data.address;
+                var geocoder = new kakao.maps.services.Geocoder();
+
+                // 주소 → 좌표 변환 요청
+                geocoder.addressSearch(fullAddr, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var lat = result[0].y;
+                        var lng = result[0].x;
+
+                        waitForAndroidInterface(() => {
+                            sendToAndroid(fullAddr, lat, lng);
+                        });
+                    } else {
+                        alert("좌표를 찾을 수 없습니다.");
+                        waitForAndroidInterface(() => {
+                            sendToAndroid(fullAddr, "0", "0");
+                        });
+                    }
+                });
             },
             width: '100%',
             height: '100%'

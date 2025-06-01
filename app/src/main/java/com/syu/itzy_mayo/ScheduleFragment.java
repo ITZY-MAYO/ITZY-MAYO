@@ -31,12 +31,16 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
-
 import com.syu.itzy_mayo.Schedule.Schedule;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,7 +56,9 @@ public class ScheduleFragment extends Fragment {
     private EditText scheduleTitleEditText;
     private EditText scheduleDescriptionEditText;
     private Button scheduleSaveButton;
+    private Button showAllSchedulesButton;
     private LinearLayout savedScheduleList;
+    private GeoPoint selectedGeoPoint = null;
 
     private Context context;
     private String selectedDate = "";
@@ -125,7 +131,7 @@ public class ScheduleFragment extends Fragment {
             }
 
             String uid = currentUser.getUid();
-            GeoPoint geoPoint = new GeoPoint(37.5665, 126.9780);
+            GeoPoint geoPoint = selectedGeoPoint != null ? selectedGeoPoint : new GeoPoint(0, 0);
 
             Timestamp timestamp;
             try {
@@ -141,21 +147,60 @@ public class ScheduleFragment extends Fragment {
             db.collection("schedule")
                     .add(schedule)
                     .addOnSuccessListener(documentReference -> {
-                        Log.d("Firestore", "일정 저장 성공: " + documentReference.getId());
                         Toast.makeText(context, "일정이 저장되었습니다", Toast.LENGTH_SHORT).show();
                         scheduleTitleEditText.setText("");
                         scheduleDescriptionEditText.setText("");
+                        selectedGeoPoint = null;
                         loadScheduleFromFirestore(selectedDate);
                     })
                     .addOnFailureListener(e -> {
-                        Log.e("Firestore", "일정 저장 실패", e);
                         Toast.makeText(context, "일정 저장 실패", Toast.LENGTH_SHORT).show();
                     });
         });
 
+        showAllSchedulesButton.setOnClickListener(v -> showAllSchedulesFromFirestore());
+
         loadScheduleFromFirestore(selectedDate);
 
         return view;
+    }
+
+    private void fetchCoordinatesFromNaverLocalSearch(String query) {
+        new Thread(() -> {
+            try {
+                String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
+                String apiUrl = "https://openapi.naver.com/v1/search/local.json?query=" + encodedQuery;
+
+                java.net.URL url = new java.net.URL(apiUrl);
+                java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+                con.setRequestProperty("X-Naver-Client-Id", "BuildConfig.NAVER_API_CLIENT_ID");
+                con.setRequestProperty("X-Naver-Client-Secret", "BuildConfig.NAVER_API_CLIENT_SECRET");
+
+                int responseCode = con.getResponseCode();
+                if (responseCode == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    br.close();
+
+                    JSONObject json = new JSONObject(sb.toString());
+                    if (json.getJSONArray("items").length() > 0) {
+                        JSONObject item = json.getJSONArray("items").getJSONObject(0);
+                        double lon = Double.parseDouble(item.getString("mapx")) / 1_0000000.0;
+                        double lat = Double.parseDouble(item.getString("mapy")) / 1_0000000.0;
+                        selectedGeoPoint = new GeoPoint(lat, lon);
+                    }
+                } else {
+                    Log.e("NaverLocalSearch", "응답 실패: " + responseCode);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void loadScheduleFromFirestore(String selectedDate) {
@@ -171,7 +216,6 @@ public class ScheduleFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     savedScheduleList.removeAllViews();
-
                     Set<CalendarDay> eventDates = new HashSet<>();
 
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
@@ -191,7 +235,7 @@ public class ScheduleFragment extends Fragment {
                                 item.put("desc", schedule.getContent());
                                 item.put("address", schedule.getAddress());
                                 item.put("date", scheduleDate);
-                                item.put("docId", doc.getId()); // 🔥 문서 ID 추가
+                                item.put("docId", doc.getId());
                                 addScheduleView(item);
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -205,12 +249,56 @@ public class ScheduleFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("Firestore", "불러오기 실패", e));
     }
 
+    private void showAllSchedulesFromFirestore() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser == null) return;
+
+        String uid = currentUser.getUid();
+
+        db.collection("schedule")
+                .whereEqualTo("userId", uid)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    savedScheduleList.removeAllViews();
+                    Set<CalendarDay> eventDates = new HashSet<>();
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Schedule schedule = doc.toObject(Schedule.class);
+                        Date date = schedule.getDatetime().toDate();
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(date);
+                        CalendarDay day = CalendarDay.from(calendar);
+                        eventDates.add(day);
+
+                        try {
+                            String scheduleDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
+                            JSONObject item = new JSONObject();
+                            item.put("title", schedule.getTitle());
+                            item.put("desc", schedule.getContent());
+                            item.put("address", schedule.getAddress());
+                            item.put("date", scheduleDate);
+                            item.put("docId", doc.getId());
+                            addScheduleView(item);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    calendarView.removeDecorators();
+                    calendarView.addDecorator(new EventDecorator(Color.RED, eventDates));
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "전체 일정 불러오기 실패", e));
+    }
+
     private void addScheduleView(JSONObject item) throws JSONException {
         String title = item.getString("title");
         String desc = item.getString("desc");
         String address = item.optString("address", "");
         String date = item.optString("date", "");
-        String docId = item.optString("docId", ""); // 🔥 문서 ID 받기
+        String docId = item.optString("docId", "");
 
         LinearLayout container = new LinearLayout(context);
         container.setOrientation(LinearLayout.HORIZONTAL);
@@ -255,10 +343,30 @@ public class ScheduleFragment extends Fragment {
 
     private class AndroidBridge {
         @JavascriptInterface
+        public void onAddressSelected(final String address, final String latStr, final String lngStr) {
+            if (getActivity() == null) return;
+            getActivity().runOnUiThread(() -> {
+                searchEditText.setText(address);
+                try {
+                    double lat = Double.parseDouble(latStr);
+                    double lng = Double.parseDouble(lngStr);
+                    selectedGeoPoint = new GeoPoint(lat, lng);
+                } catch (NumberFormatException e) {
+                    selectedGeoPoint = null;
+                    Toast.makeText(context, "위도/경도 값을 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+                addressWebView.setVisibility(View.GONE);
+            });
+        }
+
+        @JavascriptInterface
         public void onAddressSelected(final String address) {
             if (getActivity() == null) return;
-            getActivity().runOnUiThread(() -> searchEditText.setText(address));
-            addressWebView.setVisibility(View.GONE);
+            getActivity().runOnUiThread(() -> {
+                searchEditText.setText(address);
+                fetchCoordinatesFromNaverLocalSearch(address);
+                addressWebView.setVisibility(View.GONE);
+            });
         }
     }
 }
