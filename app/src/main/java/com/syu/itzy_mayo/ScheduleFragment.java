@@ -56,7 +56,7 @@ public class ScheduleFragment extends Fragment {
     private EditText scheduleTitleEditText;
     private EditText scheduleDescriptionEditText;
     private Button scheduleSaveButton;
-    private Button showAllSchedulesButton;
+
     private LinearLayout savedScheduleList;
     private GeoPoint selectedGeoPoint = null;
 
@@ -158,7 +158,6 @@ public class ScheduleFragment extends Fragment {
                     });
         });
 
-        showAllSchedulesButton.setOnClickListener(v -> showAllSchedulesFromFirestore());
 
         loadScheduleFromFirestore(selectedDate);
 
@@ -174,11 +173,12 @@ public class ScheduleFragment extends Fragment {
                 java.net.URL url = new java.net.URL(apiUrl);
                 java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");
-                con.setRequestProperty("X-Naver-Client-Id", "BuildConfig.NAVER_API_CLIENT_ID");
-                con.setRequestProperty("X-Naver-Client-Secret", "BuildConfig.NAVER_API_CLIENT_SECRET");
+                con.setRequestProperty("X-Naver-Client-Id", BuildConfig.NAVER_API_CLIENT_ID);
+                con.setRequestProperty("X-Naver-Client-Secret", BuildConfig.NAVER_API_CLIENT_SECRET);
 
                 int responseCode = con.getResponseCode();
                 if (responseCode == 200) {
+                    Log.i("NaverLocalSearch", "응답 성공: " + responseCode);
                     BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
                     StringBuilder sb = new StringBuilder();
                     String line;
@@ -342,22 +342,7 @@ public class ScheduleFragment extends Fragment {
     }
 
     private class AndroidBridge {
-        @JavascriptInterface
-        public void onAddressSelected(final String address, final String latStr, final String lngStr) {
-            if (getActivity() == null) return;
-            getActivity().runOnUiThread(() -> {
-                searchEditText.setText(address);
-                try {
-                    double lat = Double.parseDouble(latStr);
-                    double lng = Double.parseDouble(lngStr);
-                    selectedGeoPoint = new GeoPoint(lat, lng);
-                } catch (NumberFormatException e) {
-                    selectedGeoPoint = null;
-                    Toast.makeText(context, "위도/경도 값을 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
-                }
-                addressWebView.setVisibility(View.GONE);
-            });
-        }
+
 
         @JavascriptInterface
         public void onAddressSelected(final String address) {
