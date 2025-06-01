@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -36,6 +38,8 @@ import com.syu.itzy_mayo.Schedule.Schedule;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 public class MapFragment extends Fragment implements OnMapReadyCallback, AuthStateObserver {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
@@ -46,6 +50,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
     private ListenerRegistration scheduleListener;
     private UserSessionManager sessionManager;
     private FirebaseFirestore db;
+    private Toast toast;
+
+    private void showToast(String message){
+        if (toast != null) {
+            toast.cancel();
+        }
+        if(getContext() != null) {
+            toast = Toast.makeText(getContext(), message, Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
 
     private void listenScheduleMarkers() {
         if (sessionManager.isLoggedIn()) {
@@ -78,7 +93,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
                             Schedule schedule = doc.toObject(Schedule.class);
                             if (schedule != null && schedule.getTitle() != null && schedule.getGeoPoint() != null) {
                                 // 이 코드가 실행되면 db에서 가져온 일정 데이터에 설정된 위치가 지도에 표사됨(DB변경 감지 시)
-                                addMarker(schedule.getTitle(), schedule.getGeoPoint());
+                                addMarker(schedule.getId(), schedule.getContent(), schedule.getGeoPoint());
                             }
                         }
                     });
@@ -136,7 +151,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
         UiSettings uiSettings = naverMap.getUiSettings();
         uiSettings.setCompassEnabled(true);
         uiSettings.setScaleBarEnabled(true);
-        uiSettings.setZoomControlEnabled(false);
+        uiSettings.setZoomControlEnabled(true);
         uiSettings.setLocationButtonEnabled(true);
         uiSettings.setZoomGesturesEnabled(true);
 
@@ -163,19 +178,49 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
         }
     }
 
-    private void addMarker(String key, GeoPoint geoPoint) {
-        LatLng syu = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+    private void addMarker(String id, String description, GeoPoint geoPoint) {
+        LatLng position = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
         Marker marker = new Marker();
-        marker.setPosition(syu);
+        marker.setPosition(position);
         marker.setIcon(OverlayImage.fromResource(R.drawable.ic_marker));
         marker.setWidth(80);
         marker.setHeight(80);
-        marker.setCaptionText(key);
+        marker.setCaptionText(description);
         marker.setCaptionColor(Color.BLACK);
         marker.setCaptionHaloColor(Color.WHITE);
         marker.setCaptionTextSize(16);
         marker.setMap(naverMap);
-        this.mapMarkers.put(key, marker);
+        marker.setOnClickListener(overlay -> {
+            showMarkerBottomSheet(id);
+            return true;
+        });
+        this.mapMarkers.put(id, marker);
+    }
+
+    private void showMarkerBottomSheet(String id) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_marker_detail, null);
+        
+        TextView titleTextView = bottomSheetView.findViewById(R.id.text_marker_title);
+        TextView contentTextView = bottomSheetView.findViewById(R.id.text_marker_content);
+        TextView datetimeTextView = bottomSheetView.findViewById(R.id.text_marker_datetime);
+        TextView addressTextView = bottomSheetView.findViewById(R.id.text_marker_address);
+        Button closeButton = bottomSheetView.findViewById(R.id.button_close);
+        db.collection("schedule").document(id).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Schedule schedule = task.getResult().toObject(Schedule.class);
+                titleTextView.setText(schedule.getTitle());
+                contentTextView.setText(schedule.getContent());
+                datetimeTextView.setText(schedule.getDatetime().toDate().toString());
+                addressTextView.setText(schedule.getAddress());
+                closeButton.setOnClickListener(v -> bottomSheetDialog.dismiss());
+                bottomSheetDialog.setContentView(bottomSheetView);
+                bottomSheetDialog.show();
+            }
+        }).addOnFailureListener(e -> {
+            Log.w("Firestore", "Listen failed.", e);
+            showToast("일정 정보를 불러오는데 실패했습니다.");
+        });
     }
 
     private void showCurrentLocation() {
@@ -214,7 +259,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
                             Schedule schedule = doc.toObject(Schedule.class);
                             if (schedule != null && schedule.getTitle() != null && schedule.getGeoPoint() != null) {
                                 // 실제 db에서 가져온 일정 데이터에 설정된 위치가 지도에 표시하는 코드
-                                addMarker(schedule.getTitle(), schedule.getGeoPoint());
+                                addMarker(schedule.getId(), schedule.getContent(), schedule.getGeoPoint());
                             }
                         }
                     }
@@ -222,8 +267,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
     }
 
     private void showMissingPermissionError() {
-        Toast.makeText(getContext(), "Location permission is required to show your position.",
-                Toast.LENGTH_LONG).show();
+        showToast("위치 정보 표시를 위해 권한이 필요합니다.");
     }
 
     @Override
@@ -240,13 +284,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
         if (user != null && sessionManager.isLoggedIn()) {
             String uid = sessionManager.getUserId();
             if (uid != null) {
-                // 기존 마커 중 SYU를 제외하고 모두 삭제
+                // 기존 마커 모두 삭제
                 Iterator<Map.Entry<String, Marker>> iterator = mapMarkers.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, Marker> entry = iterator.next();
-                    String key = entry.getKey();
-                    if (key.equals("SYU"))
-                        continue;
                     Marker marker = entry.getValue();
                     if (marker != null) {
                         marker.setMap(null);

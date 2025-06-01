@@ -30,11 +30,11 @@ android {
         buildConfigField("String", "NCP_CLIENT_ID",
                 "\"${localProperties.getProperty("NCP_CLIENT_ID", "")}\""
         )
-        buildConfigField("String", "SUPER_BASE_URL",
-                "\"${localProperties.getProperty("SUPER_BASE_URL", "")}\""
+        buildConfigField("String", "NAVER_API_CLIENT_ID",
+                "\"${localProperties.getProperty("NAVER_API_CLIENT_ID", "")}\""
         )
-        buildConfigField("String", "SUPER_BASE_ANON_KEY",
-                "\"${localProperties.getProperty("SUPER_BASE_ANON_KEY", "")}\""
+        buildConfigField("String", "NAVER_API_CLIENT_SECRET",
+                "\"${localProperties.getProperty("NAVER_API_CLIENT_SECRET", "")}\""
         )
     }
 
