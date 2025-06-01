@@ -22,7 +22,8 @@
             android:paddingBottom="16dp"
             android:text="@string/minigame_title"
             android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="#000000" />
 
         <!-- 🎮 2x2 게임 타일 -->
         <GridLayout
@@ -51,7 +52,8 @@
                     android:text="@string/memory_game"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:background="@android:color/white" />
+                    android:background="@android:color/white"
+                    android:textColor="#000000" />
             </androidx.cardview.widget.CardView>
 
             <!-- 2. 사칙연산게임 -->
@@ -72,7 +74,8 @@
                     android:text="@string/math_game"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:background="@android:color/white" />
+                    android:background="@android:color/white"
+                    android:textColor="#000000" />
             </androidx.cardview.widget.CardView>
 
             <!-- 3. 기타 -->
@@ -93,7 +96,8 @@
                     android:text="@string/coming_soon"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:background="@android:color/white" />
+                    android:background="@android:color/white"
+                    android:textColor="#000000" />
             </androidx.cardview.widget.CardView>
 
             <!-- 4. 2048 -->
@@ -114,7 +118,8 @@
                     android:text="@string/game_2048"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:background="@android:color/white" />
+                    android:background="@android:color/white"
+                    android:textColor="#000000" />
             </androidx.cardview.widget.CardView>
 
         </GridLayout>
