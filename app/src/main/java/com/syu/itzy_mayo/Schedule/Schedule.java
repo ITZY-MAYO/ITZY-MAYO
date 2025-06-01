@@ -1,10 +1,13 @@
 package com.syu.itzy_mayo.Schedule;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.GeoPoint;
 
 
 public class Schedule {
+    @DocumentId
+    private String id;
     private String title;
     private String content;
     private String userId;
@@ -13,6 +16,14 @@ public class Schedule {
     private String address;
 
     public Schedule() {}
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getTitle() {
         return title;
@@ -61,8 +72,17 @@ public class Schedule {
     public void setAddress(String address) {
         this.address = address;
     }
-
     public Schedule(String title, String content, String userId, GeoPoint geoPoint, Timestamp datetime, String address) {
+        this.title = title;
+        this.content = content;
+        this.userId = userId;
+        this.geoPoint = geoPoint;
+        this.datetime = datetime;
+        this.address = address;
+    }
+
+    public Schedule(String id, String title, String content, String userId, GeoPoint geoPoint, Timestamp datetime, String address) {
+        this.id = id;
         this.title = title;
         this.content = content;
         this.userId = userId;
