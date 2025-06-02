@@ -78,7 +78,7 @@ public class GoalFirestoreHelper {
         if (goal.getGoalId() == null) return;
         db.collection("goals")
                 .document(goal.getGoalId())
-                .delete();//--
+                .delete();
     }
 
     public void updateGoal(Goal goal, Runnable onSuccess, Runnable onFailure) {

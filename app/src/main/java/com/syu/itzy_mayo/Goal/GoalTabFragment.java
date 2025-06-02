@@ -217,9 +217,14 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
     }
 
     private void updateReport(List<Goal> goals) {
-        if (!"today".equals(tabType) || tvReport == null) return;
+        if (!"today".equals(tabType) || tvReport == null) {
+            if(tvReport != null){
+                tvReport.setVisibility(View.GONE);
+            }
+            return;
+        }
+        tvReport.setVisibility(View.VISIBLE);
         int total = goals.size(), done = 0;
-
         for (Goal g : goals) {
             if (g.isCompleted()) done++;
         }
