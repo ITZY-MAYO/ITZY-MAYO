@@ -46,11 +46,7 @@ public class SelectDifficultyActivity extends AppCompatActivity {
                 CharSequence rawItem = getItem(position);
                 String item = rawItem != null ? rawItem.toString() : "";
 
-                if (item.contains("(")) {
-                    textView.setTextColor(Color.WHITE); // 예시 항목은 흰색
-                } else {
-                    textView.setTextColor(Color.BLACK); // 일반 항목은 검정색
-                }
+                textView.setTextColor(Color.parseColor("#333333"));
                 return view;
             }
         };
