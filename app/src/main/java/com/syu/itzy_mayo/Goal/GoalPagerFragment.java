@@ -21,7 +21,7 @@ public class GoalPagerFragment extends Fragment {
     private GoalPagerAdapter pagerAdapter;
 
     public GoalPagerFragment() {
-        super(R.layout.goal_pager_fragment); // XML 레이아웃 필요
+        super(R.layout.goal_pager_fragment);
     }
 
     @Nullable
