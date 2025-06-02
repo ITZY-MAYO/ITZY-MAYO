@@ -76,9 +76,9 @@ public class GuessNumberActivity extends BaseGameActivity {
         remainingAttempts--;
 
         if (guess < targetNumber) {
-            resultText.setText(getString(R.string.wrong_up));
+            resultText.setText(getString(R.string.wrong_up_with_input, guess));
         } else if (guess > targetNumber) {
-            resultText.setText(getString(R.string.wrong_down));
+            resultText.setText(getString(R.string.wrong_down_with_input, guess));
         } else {
             resultText.setText(getString(R.string.correct_answer));
             guessButton.setEnabled(false);

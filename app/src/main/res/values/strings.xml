@@ -29,8 +29,8 @@
     <string name="select_difficulty_title">난이도를 선택하세요</string>
     <string name="start_game_button">게임 시작하기</string>
     <string name="correct_answer">정답입니다! 🎉</string>
-    <string name="wrong_up">UP!</string>
-    <string name="wrong_down">DOWN!</string>
+    <string name="wrong_up_with_input">%1$d보다 Up!</string>
+    <string name="wrong_down_with_input">%1$d보다 Down!</string>
     <string name="game_failed">실패! 정답은 %1$d</string>
     <string name="remaining_attempts_label">남은 기회:</string>
     <string name="back_button">뒤로가기</string>
