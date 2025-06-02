@@ -37,12 +37,21 @@ import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.syu.itzy_mayo.Schedule.Schedule;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.datepicker.MaterialDatePicker;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, AuthStateObserver {
 
@@ -412,10 +421,71 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, AuthSta
     }
 
     private void reverseGeocode(LatLng coord, OnAddressReceivedListener listener) {
-        // Geocoding API를 사용하여 좌표를 주소로 변환
-        // 예: Naver Geocoding API, Google Geocoding API 등
-        // 임시로 좌표값만 반환
-        listener.onAddressReceived(String.format("위도: %.6f, 경도: %.6f", coord.latitude, coord.longitude));
+        String coords = String.format("%f,%f", coord.longitude, coord.latitude);
+        String url = "https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?output=json&coords=" + coords;
+        
+        new Thread(() -> {
+            try {
+                URL apiUrl = new URL(url);
+                HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("x-ncp-apigw-api-key-id", BuildConfig.NCP_CLIENT_ID);
+                conn.setRequestProperty("x-ncp-apigw-api-key", BuildConfig.NCP_API_KEY);
+                conn.setRequestProperty("Accept", "application/json");
+
+                int responseCode = conn.getResponseCode();
+                Log.i("ResponseCode", String.valueOf(responseCode));
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    // JSON 파싱
+                    JSONObject jsonResponse = new JSONObject(response.toString());
+                    JSONArray results = jsonResponse.getJSONArray("results");
+                    
+                    // 첫 번째 결과(법정동 코드)에서 지역 정보 추출
+                    JSONObject firstResult = results.getJSONObject(0);
+                    JSONObject region = firstResult.getJSONObject("region");
+                    
+                    String area1 = region.getJSONObject("area1").getString("name"); // 시/도
+                    String area2 = region.getJSONObject("area2").getString("name"); // 시/군/구
+                    String area3 = region.getJSONObject("area3").getString("name"); // 동/읍/면
+                    
+                    // area4가 비어있지 않은 경우에만 포함
+                    JSONObject area4Obj = region.getJSONObject("area4");
+                    String area4 = area4Obj.getString("name"); // 리
+                    
+                    // 주소 조합
+                    final String address;
+                    if (area4.isEmpty()) {
+                        address = String.format("%s %s %s", area1, area2, area3);
+                    } else {
+                        address = String.format("%s %s %s %s", area1, area2, area3, area4);
+                    }
+
+                    // UI 스레드에서 결과 전달
+                    requireActivity().runOnUiThread(() -> {
+                        if (!address.isEmpty()) {
+                            listener.onAddressReceived(address);
+                        } else {
+                            showToast("주소를 가져오는데 실패했습니다.");
+                        }
+                    });
+                } else {
+                    requireActivity().runOnUiThread(() -> 
+                        showToast("주소를 가져오는데 실패했습니다. Response Error"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                requireActivity().runOnUiThread(() -> 
+                    showToast("주소를 가져오는데 실패했습니다. Error"));
+            }
+        }).start();
     }
 
     interface OnAddressReceivedListener {
