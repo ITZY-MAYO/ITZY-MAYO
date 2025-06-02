@@ -167,18 +167,19 @@ public class ScheduleFragment extends Fragment {
     private void fetchCoordinatesFromNaverLocalSearch(String query) {
         new Thread(() -> {
             try {
+
                 String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
-                String apiUrl = "https://openapi.naver.com/v1/search/local.json?query=" + encodedQuery;
+                String apiUrl = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=" + encodedQuery;
 
                 java.net.URL url = new java.net.URL(apiUrl);
                 java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");
-                con.setRequestProperty("X-Naver-Client-Id", BuildConfig.NAVER_API_CLIENT_ID);
-                con.setRequestProperty("X-Naver-Client-Secret", BuildConfig.NAVER_API_CLIENT_SECRET);
+                con.setRequestProperty("x-ncp-apigw-api-key-id", BuildConfig.NCP_CLIENT_ID);
+                con.setRequestProperty("x-ncp-apigw-api-key", BuildConfig.NCP_API_KEY);
+                con.setRequestProperty("Accept", "application/json");
 
                 int responseCode = con.getResponseCode();
                 if (responseCode == 200) {
-                    Log.i("NaverLocalSearch", "응답 성공: " + responseCode);
                     BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
                     StringBuilder sb = new StringBuilder();
                     String line;
@@ -186,13 +187,14 @@ public class ScheduleFragment extends Fragment {
                         sb.append(line);
                     }
                     br.close();
-
                     JSONObject json = new JSONObject(sb.toString());
-                    if (json.getJSONArray("items").length() > 0) {
-                        JSONObject item = json.getJSONArray("items").getJSONObject(0);
-                        double lon = Double.parseDouble(item.getString("mapx")) / 1_0000000.0;
-                        double lat = Double.parseDouble(item.getString("mapy")) / 1_0000000.0;
+                    Log.i("NaverLocalSearch", json.toString());
+                    if (json.getJSONArray("addresses").length() > 0) {
+                        JSONObject item = json.getJSONArray("addresses").getJSONObject(0);
+                        double lon = Double.parseDouble(item.getString("x"));
+                        double lat = Double.parseDouble(item.getString("y"));
                         selectedGeoPoint = new GeoPoint(lat, lon);
+                        Log.i("NaverLocalSearch", "경도: " + lon + " 위도: " + lat);
                     }
                 } else {
                     Log.e("NaverLocalSearch", "응답 실패: " + responseCode);
