@@ -10,32 +10,34 @@ import android.content.Intent;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.syu.itzy_mayo.MainActivity;
 import com.syu.itzy_mayo.R;
-
-import java.util.List;
 
 public class MyAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String msg = intent.getStringExtra("msg");
-        String title = intent.getStringExtra("title");
-        String time  = intent.getStringExtra("goalTime");
+        String goalId = intent.getStringExtra("goalId");
 
+        if (goalId == null || goalId.isEmpty()) return;
 
-        if (msg != null && msg.contains("아직 목표를 완료하지 않았습니다")) {
-            List<Goal> allGoals = SharedGoalList.get().getAllGoals();
-            boolean notChecked = false;
-            for (Goal g : allGoals) {
-                if (g.getTitle().equals(title) && g.getTime().equals(time) && !g.isCompleted()) {
-                    notChecked = true;
-                    break;
-                }
-            }
-            if (!notChecked) return;
-        }
+        FirebaseFirestore.getInstance()
+                .collection("goals")
+                .document(goalId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.exists()) return;
 
-        // 알림 채널 생성 (Android 8 이상)
+                    Goal goal = snapshot.toObject(Goal.class);
+                    if (goal == null || goal.isCompleted()) return;
+
+                    showNotification(context, msg);
+                });
+    }
+
+    private void showNotification(Context context, String msg) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("goal_channel", "목표 알림", NotificationManager.IMPORTANCE_HIGH);
@@ -57,7 +59,7 @@ public class MyAlarmReceiver extends BroadcastReceiver {
                 .setContentText(msg)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent); // 클릭 시 실행
+                .setContentIntent(pendingIntent);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)

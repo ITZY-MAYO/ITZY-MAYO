@@ -1,8 +1,12 @@
 package com.syu.itzy_mayo.Goal;
 
 import android.app.AlertDialog;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -136,8 +140,11 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
                         newGoal.setCreatedDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime()));
                         newGoal.setUserId(sessionManager.getUserId());
 
-                        firestoreHelper.addGoal(newGoal, this::refreshAll, () ->
-                                Toast.makeText(getContext(), "저장 실패", Toast.LENGTH_SHORT).show()
+                        firestoreHelper.addGoal(newGoal, () -> {
+                                    scheduleGoalAlarm(requireContext(), newGoal);
+                                    refreshAll();
+                                }, () ->
+                                        Toast.makeText(getContext(), "저장 실패", Toast.LENGTH_SHORT).show()
                         );
                     }
                 })
@@ -183,7 +190,10 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
                         goal.setTitle(newTitle);
                         goal.setTime(newTime);
                         goal.setDaysOfWeek(new ArrayList<>(selectedDays));
-                        firestoreHelper.updateGoal(goal, this::refreshAll, () ->
+                        firestoreHelper.updateGoal(goal, () -> {
+                            scheduleGoalAlarm(requireContext(), goal);
+                            refreshAll();
+                        }, () ->
                                 Toast.makeText(getContext(), "수정 실패", Toast.LENGTH_SHORT).show());
                     }
                 })
@@ -262,8 +272,67 @@ public class GoalTabFragment extends Fragment implements GoalAdapter.OnGoalCheck
                 Goal g = adapter.getGoal(pos);
                 adapter.removeItem(pos);
                 firestoreHelper.deleteGoal(g);
+                cancelGoalAlarm(requireContext(), g.getGoalId());
             }
         };
         new ItemTouchHelper(callback).attachToRecyclerView(recyclerView);
+    }
+
+    private void scheduleGoalAlarm(Context context, Goal goal) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Toast.makeText(context, "정확한 알림 권한이 필요합니다", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        Intent intent = new Intent(context, MyAlarmReceiver.class);
+        intent.putExtra("goalId", goal.getGoalId());
+        intent.putExtra("msg", "아직 목표를 완료하지 않았습니다");
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                goal.getGoalId().hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        Calendar cal = Calendar.getInstance();
+        String[] parts = goal.getTime().split(":");
+        cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
+        cal.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        if (cal.before(Calendar.getInstance())) {
+            cal.add(Calendar.DATE, 1);
+        }
+
+        try {
+            alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    cal.getTimeInMillis(),
+                    pendingIntent
+            );
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "정확한 알림 예약에 실패했습니다", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void cancelGoalAlarm(Context context, String goalId) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, MyAlarmReceiver.class);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                goalId.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        alarmManager.cancel(pendingIntent);
     }
 }
