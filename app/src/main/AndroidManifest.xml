@@ -28,6 +28,7 @@
         <activity android:name=".Intro2048GameActivity" android:exported="true" />
         <activity android:name=".IntroGuessNumberGameActivity" android:exported="true" />
         <activity android:name=".IntroMemoryGameActivity" android:exported="true" />
+        <activity android:name=".GameResultActivity" android:exported="true" />
 
         <activity
             android:name=".MainActivity"

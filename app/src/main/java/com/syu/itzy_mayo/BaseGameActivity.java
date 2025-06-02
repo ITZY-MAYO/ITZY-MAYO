@@ -232,4 +232,8 @@ public abstract class BaseGameActivity extends AppCompatActivity {
             startRuntimeTimerIfNeeded();
         }
     }
+    // 게임 경과 시간을 밀리초 단위로 반환
+    public long getElapsedTime() {
+        return totalSeconds * 1000L;
+    }
 }
