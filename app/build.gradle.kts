@@ -30,11 +30,8 @@ android {
         buildConfigField("String", "NCP_CLIENT_ID",
                 "\"${localProperties.getProperty("NCP_CLIENT_ID", "")}\""
         )
-        buildConfigField("String", "NAVER_API_CLIENT_ID",
-                "\"${localProperties.getProperty("NAVER_API_CLIENT_ID", "")}\""
-        )
-        buildConfigField("String", "NAVER_API_CLIENT_SECRET",
-                "\"${localProperties.getProperty("NAVER_API_CLIENT_SECRET", "")}\""
+        buildConfigField("String", "NCP_API_KEY",
+                "\"${localProperties.getProperty("NCP_API_KEY", "")}\""
         )
     }
 
@@ -68,6 +65,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation("com.prolificinteractive:material-calendarview:1.4.3")
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 
 
     // Navigation Component (추가)
