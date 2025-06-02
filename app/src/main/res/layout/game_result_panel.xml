@@ -9,11 +9,21 @@
 
     <LinearLayout
         android:orientation="vertical"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:gravity="top|center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:padding="24dp"
         android:background="@drawable/game_result_background">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="start"
+            android:layout_marginBottom="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/arrow_backward"
+            android:contentDescription="@string/back_button" />
 
         <TextView
             android:id="@+id/text_result_title"
