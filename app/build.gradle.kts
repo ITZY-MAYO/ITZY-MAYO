@@ -4,7 +4,7 @@ import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.google.services)
 }
 
 val localProperties = Properties().apply {
@@ -64,7 +64,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
-    implementation("com.prolificinteractive:material-calendarview:1.4.3")
+    implementation(libs.firebase.messaging)
+    implementation(libs.material.calendarview)
     implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 
 
