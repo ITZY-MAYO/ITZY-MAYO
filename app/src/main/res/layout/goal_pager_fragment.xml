@@ -3,27 +3,36 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/goalToolbar"
         android:layout_width="match_parent"
-        android:layout_height="43dp"
-        android:background="?attr/colorPrimary"
+        android:layout_height="60dp"
+        android:background="@android:color/white"
         android:title="목표 관리"
-        android:titleTextColor="@android:color/white" />
+        android:titleTextColor="@android:color/black" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp"
+        android:background="@android:color/white"
+        app:tabIndicatorColor="@android:color/black"
+        app:tabSelectedTextColor="@android:color/black"
+        app:tabTextColor="@android:color/darker_gray" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="60dp"
         android:layout_marginBottom="72dp"
+        android:background="@android:color/white"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -32,5 +41,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"/>
+        android:layout_margin="24dp" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

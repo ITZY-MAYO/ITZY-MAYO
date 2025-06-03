@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
     implementation(libs.material.calendarview)
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 
 
     // Navigation Component (추가)

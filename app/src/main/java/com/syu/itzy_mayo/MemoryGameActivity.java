@@ -1,5 +1,7 @@
 package com.syu.itzy_mayo;
 
+import android.content.Intent;
+import com.syu.itzy_mayo.BaseGameActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 public class MemoryGameActivity extends BaseGameActivity {
 
     private GridLayout grid;
+    private int score = 0;
+    private TextView scoreText, timerText;
     private final int[] icons = {
             R.drawable.memory_bolt, R.drawable.memory_ladybug,
             R.drawable.memory_leaf, R.drawable.memory_rainbow,
@@ -45,7 +49,10 @@ public class MemoryGameActivity extends BaseGameActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         grid = findViewById(R.id.memory_grid);
+        scoreText = findViewById(R.id.text_score);
+        timerText = findViewById(R.id.text_runtime); // Changed from R.id.text_timer to R.id.text_runtime
         setupGame();
+        gameInnerContainer.post(() -> startRuntimeTimerIfNeeded());
     }
     @Override
     protected void generateNewQuestion() {
@@ -111,6 +118,7 @@ public class MemoryGameActivity extends BaseGameActivity {
             new Handler().postDelayed(() -> {
                 if ((int) firstCard.getTag() == (int) secondCard.getTag()) {
                     matchCount++;
+                    increaseScore(10);
                     firstCard.setEnabled(false);
                     secondCard.setEnabled(false);
                 } else {
@@ -119,7 +127,37 @@ public class MemoryGameActivity extends BaseGameActivity {
                 }
                 firstCard = secondCard = null;
                 isFlipping = false;
+
+                // 모든 카드가 맞춰졌으면 결과 화면으로 이동
+                if (matchCount == icons.length) {
+                    showResult();
+                }
             }, 1000);
         }
+    }
+
+    private void increaseScore(int value) {
+        score += value;
+        if (scoreText != null) {
+            scoreText.setText(getString(R.string.score_format, score));
+        }
+    }
+
+    // 결과 화면으로 이동하는 메서드
+    private void showResult() {
+        // 점수는 이미 필드로 관리되고 있음
+        long elapsedMillis = getElapsedTime();  // BaseGameActivity로부터 상속된 시간 함수
+        int seconds = (int) (elapsedMillis / 1000);
+        int minutes = seconds / 60;
+        seconds %= 60;
+
+        String timeFormatted = String.format("%02d:%02d", minutes, seconds);
+
+        Intent intent = new Intent(this, GameResultActivity.class);
+        intent.putExtra("score", score);
+        intent.putExtra("time", timeFormatted);
+        pauseGame();
+        startActivity(intent);
+        finish();
     }
 }

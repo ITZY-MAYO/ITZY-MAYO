@@ -29,8 +29,7 @@
     window.onload = function () {
         new daum.Postcode({
             oncomplete: function(data) {
-                var fullAddr = data.roadAddress + " (" + data.jibunAddress + ") [" + data.zonecode + "]";
-                sendToAndroid(fullAddr);
+                sendToAndroid(data.roadAddress);
             },
             width: '100%',
             height: '100%'
