@@ -6,5 +6,6 @@
         <domain includeSubdomains="true">firestore.googleapis.com</domain>
         <domain includeSubdomains="true">firebase.googleapis.com</domain>
         <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">ec2-3-36-62-246.ap-northeast-2.compute.amazonaws.com</domain>
     </domain-config>
 </network-security-config> 
