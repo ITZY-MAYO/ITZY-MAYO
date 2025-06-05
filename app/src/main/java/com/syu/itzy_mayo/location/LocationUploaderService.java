@@ -40,8 +40,8 @@ public class LocationUploaderService extends Service {
     private static final String TAG = "LocationUploaderSvc";
     private static final String NOTIFICATION_CHANNEL_ID = "LocationUploaderChannel";
     private static final int NOTIFICATION_ID = 12345678;
-    private static final long UPDATE_INTERVAL_MS = 30 * 1000; // 30 seconds
-    private static final long FASTEST_INTERVAL_MS = 15 * 1000; // 15 seconds
+    private static final long UPDATE_INTERVAL_MS = 30 * 1000; // 30 sec
+    private static final long FASTEST_INTERVAL_MS = 15 * 1000;
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
@@ -66,8 +66,8 @@ public class LocationUploaderService extends Service {
         Log.d(TAG, "Service started");
         startForeground(NOTIFICATION_ID, createNotification());
         startLocationUpdates();
-        serviceHandler.post(periodicUpdateRunnable); // Start periodic uploads
-        return START_STICKY; // Restart service if killed
+        serviceHandler.post(periodicUpdateRunnable);
+        return START_STICKY;
     }
 
     private void setupLocationCallback() {
@@ -119,8 +119,7 @@ public class LocationUploaderService extends Service {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "Location permission not granted. Cannot start updates.");
-            // Consider stopping the service or notifying the user
-            stopSelf(); // Stop the service if permissions are not available
+            stopSelf();
             return;
         }
         try {
@@ -133,7 +132,6 @@ public class LocationUploaderService extends Service {
     }
 
     private void sendLocationToServer(LocationData locationData) {
-        // Run network operation on a new thread to avoid blocking the service's main thread
         new Thread(() -> {
             HttpURLConnection connection = null;
             try {
@@ -143,8 +141,8 @@ public class LocationUploaderService extends Service {
                 connection.setRequestProperty("Content-Type", "application/json; utf-8");
                 connection.setRequestProperty("Accept", "application/json");
                 connection.setDoOutput(true);
-                connection.setConnectTimeout(10000); // 10 seconds
-                connection.setReadTimeout(10000);    // 10 seconds
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(30000);
 
                 String jsonPayload = locationData.toJson();
                 Log.d(TAG, "Sending JSON: " + jsonPayload);
@@ -158,19 +156,8 @@ public class LocationUploaderService extends Service {
                 Log.d(TAG, "POST Response Code :: " + responseCode);
                 if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
                     Log.i(TAG, "Location uploaded successfully.");
-                    // Optionally, read response if needed
-                    // try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                    //    StringBuilder response = new StringBuilder();
-                    //    String responseLine;
-                    //    while ((responseLine = br.readLine()) != null) {
-                    //        response.append(responseLine.trim());
-                    //    }
-                    //    Log.d(TAG, "Response Body: " + response.toString());
-                    // }
                 } else {
                     Log.e(TAG, "Error uploading location. Response code: " + responseCode);
-                    // Optionally, read error stream
-                    // try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) { ... }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error sending location to server", e);
@@ -197,14 +184,14 @@ public class LocationUploaderService extends Service {
     }
 
     private Notification createNotification() {
-        Intent notificationIntent = new Intent(this, MainActivity.class); // Or your app's main activity
+        Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
         return new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Location Tracking Active")
                 .setContentText("Uploading your location periodically.")
-                .setSmallIcon(R.mipmap.ic_launcher) // Replace with your app's icon
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent)
                 .build();
     }
@@ -226,6 +213,6 @@ public class LocationUploaderService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null; // We are not using binding
+        return null;
     }
 } 
