@@ -183,12 +183,34 @@ public class SettingsFragment extends Fragment implements AuthStateObserver{
         TextView accountSettings = rootView.findViewById(R.id.account_settings);
         TextView aboutApp = rootView.findViewById(R.id.about_app);
 
-        notificationSettings.setOnClickListener(v -> showToast("알림 설정"));
+        notificationSettings.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("알림 설정")
+                    .setMessage("30초 마다 100m 이내에 설정된 일정이 있을때 알림이 발송됩니다.")
+                    .setPositiveButton("확인", (dialog, which) -> {
+                        // 확인 버튼 클릭 시 동작
+                    })
+                    .setNegativeButton("취소", (dialog, which) -> {
+                        // 취소 버튼 클릭 시 동작
+                    });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();});
 
         accountSettings.setOnClickListener(v -> {
             // 계정 설정은 로그인 상태에서만 접근 가능
             if (sessionManager.isLoggedIn()) {
-                showToast("계정 설정");
+                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                builder.setTitle("계정 설정")
+                        .setMessage("기능 추가 예정")
+                        .setPositiveButton("확인", (dialog, which) -> {
+                            dialog.cancel();
+                        })
+                        .setNegativeButton("취소", (dialog, which) -> {
+                            dialog.cancel();
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             } else {
                 showToast("로그인이 필요합니다.");
             }
@@ -197,11 +219,12 @@ public class SettingsFragment extends Fragment implements AuthStateObserver{
         aboutApp.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
             builder.setTitle("About Us")
-                    .setMessage("모달 메시지 내용을 여기에 작성합니다.")
+                    .setMessage("Team 2123.")
                     .setPositiveButton("확인", (dialog, which) -> {
-                        // 확인 버튼 클릭 시 동작
+                        dialog.cancel();
                     })
                     .setNegativeButton("취소", (dialog, which) -> {
+                        dialog.cancel();
                         // 취소 버튼 클릭 시 동작
                     });
 
